@@ -155,12 +155,18 @@ Chrome Web Store release pending review.
 
 ### Install from Source
 
-1. Download or clone this repository.
+1. Download `chat-distiller-X.Y.Z.zip` from the
+   [latest GitHub Release](https://github.com/lsaint/chat-distiller/releases/latest)
+   and extract it, or clone this repository.
 2. Open `chrome://extensions` in Chrome.
 3. Enable **Developer mode**.
 4. Select **Load unpacked**.
-5. Choose the repository directory.
+5. Choose the extracted archive or repository directory.
 6. Open Chat Distiller and authorize a local root directory.
+
+Each GitHub Release also provides a `.sha256` file for verifying the extension
+archive. The release ZIP contains the same runtime files as the corresponding
+Chrome Web Store submission package.
 
 Chat Distiller requires Chrome 116 or later.
 

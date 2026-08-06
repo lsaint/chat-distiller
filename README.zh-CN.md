@@ -114,12 +114,16 @@ Chrome Web Store 版本正在等待审核。
 
 ### 从源码安装
 
-1. 下载或克隆本仓库。
+1. 从[最新 GitHub Release](https://github.com/lsaint/chat-distiller/releases/latest)
+   下载 `chat-distiller-X.Y.Z.zip` 并解压，或者克隆本仓库。
 2. 在 Chrome 中打开 `chrome://extensions`。
 3. 开启“开发者模式”。
 4. 点击“加载已解压的扩展程序”。
-5. 选择仓库目录。
+5. 选择解压后的目录或仓库目录。
 6. 打开 Chat Distiller 并授权一个本地根目录。
+
+每个 GitHub Release 还会提供用于校验扩展压缩包的 `.sha256` 文件。Release ZIP 与对应的
+Chrome Web Store 送审包包含相同的运行时文件。
 
 Chat Distiller 要求 Chrome 116 或更高版本。
 

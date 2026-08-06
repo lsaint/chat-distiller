@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chat Distiller</title>
+  <style>
+    body {
+      width: 340px;
+      margin: 0;
+      padding: 16px;
+      box-sizing: border-box;
+      font-family: system-ui, sans-serif;
+      color: #202124;
+      background: #ffffff;
+    }
+
+    h1, h2 {
+      margin: 0 0 14px;
+      font-size: 18px;
+    }
+
+    h2 {
+      font-size: 15px;
+      margin: 0;
+    }
+
+    .view-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    label {
+      display: block;
+      margin-top: 12px;
+      margin-bottom: 6px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 12px;
+      margin-bottom: 6px;
+    }
+
+    .label-row label {
+      margin: 0;
+    }
+
+    .btn-link {
+      background: none;
+      border: none;
+      color: #1a73e8;
+      font-size: 12px;
+      padding: 0;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      box-sizing: border-box;
+      border: 1px solid #c7c7c7;
+      border-radius: 8px;
+      padding: 9px 10px;
+      font: inherit;
+    }
+
+    textarea {
+      min-height: 132px;
+      resize: vertical;
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 8px;
+      padding: 9px 12px;
+      cursor: pointer;
+      font: inherit;
+    }
+
+    #generate, #select-directory {
+      width: 100%;
+      color: #ffffff;
+      background: #1a73e8;
+    }
+
+    #disconnect {
+      background: #eeeeee;
+      color: #202124;
+      white-space: nowrap;
+    }
+
+    button:disabled {
+      cursor: default;
+      opacity: 0.55;
+    }
+
+    #directory-status {
+      background: #f8f9fa;
+    }
+
+    #inline-settings {
+      white-space: nowrap;
+      margin-left: 8px;
+      font-weight: 600;
+    }
+
+    #status, #settings-status {
+      margin-top: 12px;
+      font-size: 12px;
+      line-height: 1.45;
+      overflow-wrap: anywhere;
+    }
+
+    .success {
+      color: #137333;
+    }
+
+    .error {
+      color: #b3261e;
+    }
+
+    .muted {
+      color: #5f6368;
+    }
+
+    .setting-card {
+      padding: 14px;
+      border-radius: 8px;
+      background: #f8f9fa;
+      border: 1px solid #e8eaed;
+      margin-bottom: 14px;
+    }
+
+    .setting-card p {
+      margin: 0 0 12px;
+      font-size: 12px;
+      line-height: 1.5;
+      color: #3c4043;
+    }
+
+    code {
+      padding: 2px 4px;
+      background: #e8eaed;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Main View -->
+  <div id="main-view">
+    <h1 data-i18n="extName">Chat Distiller</h1>
+
+    <div class="label-row">
+      <label for="directory-status" data-i18n="rootDirectory">Root directory</label>
+      <button id="inline-settings" type="button" class="btn-link" style="display: none;" data-i18n="openSettings">Open settings</button>
+    </div>
+    <input id="directory-status" class="muted" placeholder="No directory selected" data-i18n-placeholder="rootPathPlaceholder" readonly>
+
+    <label for="relative-directory" data-i18n="subdirectory">Subdirectory</label>
+    <input id="relative-directory" value="inbox">
+
+    <label for="filename" data-i18n="filename">Filename</label>
+    <input id="filename" placeholder="Leave blank to generate automatically" data-i18n-placeholder="filenamePlaceholder">
+
+    <div class="label-row">
+      <label for="prompt" data-i18n="distillationPrompt">Distillation prompt</label>
+      <button id="reset-prompt" type="button" class="btn-link" data-i18n="resetDefault">Reset to default</button>
+    </div>
+    <textarea id="prompt"></textarea>
+
+    <p class="muted" style="font-size: 12px; line-height: 1.45; margin: 10px 0 0;" data-i18n="autoDisclosure">
+      After you click “Generate and save,” the extension automatically enters and sends the prompt above in the current ChatGPT chat.
+    </p>
+
+    <div class="actions">
+      <button id="generate" data-i18n="generateAndSave">Generate and save</button>
+    </div>
+
+    <div id="status" class="muted"></div>
+  </div>
+
+  <!-- Saving Progress View -->
+  <div id="saving-view" style="display: none;">
+    <div class="view-header">
+      <h2 data-i18n="progressTitle">Generation and save progress</h2>
+    </div>
+
+    <div class="setting-card" style="background: #e8f0fe; border-color: #d2e3fc; color: #174ea6;">
+      <p style="margin: 0; color: #174ea6;"><strong data-i18n="tipLabel">Tip:</strong> <span data-i18n="backgroundTip">The task continues in the background, so you can close this popup.</span></p>
+    </div>
+
+    <div id="saving-status" class="muted" style="margin-top: 14px; font-size: 13px; line-height: 1.55; overflow-wrap: anywhere;" data-i18n="initializing">Initializing…</div>
+
+    <div class="actions" style="margin-top: 18px; display: flex; gap: 8px;">
+      <button id="cancel-saving" type="button" style="background:#eeeeee;color:#202124;" data-i18n="back">Back</button>
+      <button id="cancel-task" type="button" style="background:#fce8e6;color:#c5221f;display:none;" data-i18n="cancelTask">Cancel task</button>
+    </div>
+  </div>
+
+  <script src="i18n.js"></script>
+  <script type="module" src="popup.js"></script>
+</body>
+</html>

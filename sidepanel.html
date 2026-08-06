@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title data-i18n="settingsTitle">Chat Distiller Settings</title>
+  <style>
+    body { margin: 0; padding: 16px; box-sizing: border-box; font-family: system-ui, sans-serif; color: #202124; background: #fff; }
+    h1 { margin: 0 0 10px; font-size: 18px; }
+    p { font-size: 12px; line-height: 1.5; color: #3c4043; }
+    label { display: block; margin: 14px 0 6px; font-size: 13px; font-weight: 600; }
+    input { width: 100%; box-sizing: border-box; border: 1px solid #c7c7c7; border-radius: 8px; padding: 9px 10px; font: inherit; }
+    input[readonly] { background: #f8f9fa; }
+    .actions { display: flex; gap: 8px; margin-top: 12px; }
+    button { border: 0; border-radius: 8px; padding: 9px 12px; cursor: pointer; font: inherit; }
+    #select-directory { flex: 1; color: #fff; background: #1a73e8; }
+    #disconnect { color: #202124; background: #eee; }
+    #status { margin-top: 14px; font-size: 12px; line-height: 1.5; overflow-wrap: anywhere; }
+    .success { color: #137333; }
+    .error { color: #b3261e; }
+    .muted { color: #5f6368; }
+  </style>
+</head>
+<body>
+  <h1 data-i18n="settingsTitle">Chat Distiller Settings</h1>
+  <p data-i18n="standaloneSettingsIntro">Choose a local root directory. The extension creates Memory files only in the authorized directory and its subdirectories.</p>
+
+  <label for="root-directory" data-i18n="rootPathLabel">Authorized root directory</label>
+  <input id="root-directory" placeholder="No directory selected" data-i18n-placeholder="rootPathPlaceholder" readonly>
+
+  <div class="actions">
+    <button id="select-directory" type="button" data-i18n="chooseRoot">Select root directory</button>
+    <button id="disconnect" type="button" data-i18n="disconnect">Disconnect</button>
+  </div>
+
+  <label for="relative-directory" data-i18n="defaultSubdirectory">Default subdirectory</label>
+  <input id="relative-directory" value="inbox" placeholder="Example: inbox or notes/chat" data-i18n-placeholder="subdirectoryPlaceholder">
+
+  <div id="status" class="muted" data-i18n="checkingRoot">Checking root directory…</div>
+
+  <script src="i18n.js"></script>
+  <script type="module" src="sidepanel.js"></script>
+</body>
+</html>

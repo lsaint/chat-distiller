@@ -4,6 +4,7 @@ The root [README](../README.md) explains what Chat Distiller does and provides
 the shortest installation path. Use these guides for implementation details,
 extension boundaries, and recovery procedures.
 
+- [Why Chat Distiller](why-chat-distiller.md) — understand the philosophy of bridging browser AI design discussions and local coding agents.
 - [Architecture](architecture.md) — understand component ownership, the task
   lifecycle, and the validated output protocol.
 - [Site Adapter Guide](site-adapters.md) — add support for another AI chat site

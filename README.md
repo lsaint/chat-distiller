@@ -17,7 +17,9 @@
 ![Manifest V3](https://img.shields.io/badge/Manifest-V3-34A853)
 ![Languages: English | 简体中文](https://img.shields.io/badge/languages-English%20%7C%20简体中文-blue.svg)
 
-[简体中文](README.zh-CN.md) · [Privacy Policy](PRIVACY.md) · [Aikito](https://github.com/lsaint/aikito)
+[Download Extension](https://github.com/lsaint/chat-distiller/releases/latest) ·
+[简体中文](README.zh-CN.md) · [Privacy Policy](PRIVACY.md) ·
+[Aikito](https://github.com/lsaint/aikito)
 
 Chat Distiller is a Chrome Manifest V3 extension that asks the AI in your
 current chat to distill the conversation, validates the structured response,
@@ -153,20 +155,26 @@ Additional AI chat sites can be added through the Site Adapter interface.
 
 Chrome Web Store release pending review.
 
-### Install from Source
+### Install from GitHub Release
 
-1. Download `chat-distiller-X.Y.Z.zip` from the
-   [latest GitHub Release](https://github.com/lsaint/chat-distiller/releases/latest)
-   and extract it, or clone this repository.
-2. Open `chrome://extensions` in Chrome.
-3. Enable **Developer mode**.
-4. Select **Load unpacked**.
-5. Choose the extracted archive or repository directory.
+1. Open the [latest GitHub Release](https://github.com/lsaint/chat-distiller/releases/latest).
+2. Under **Assets**, download `chat-distiller-*.zip`. Do not download the
+   automatically generated **Source code** archives.
+3. Extract the downloaded ZIP.
+4. Open `chrome://extensions` in Chrome and enable **Developer mode**.
+5. Select **Load unpacked** and choose the extracted directory.
 6. Open Chat Distiller and authorize a local root directory.
 
 Each GitHub Release also provides a `.sha256` file for verifying the extension
 archive. The release ZIP contains the same runtime files as the corresponding
 Chrome Web Store submission package.
+
+### Install from Source
+
+1. Clone this repository.
+2. Open `chrome://extensions` in Chrome and enable **Developer mode**.
+3. Select **Load unpacked** and choose the repository directory.
+4. Open Chat Distiller and authorize a local root directory.
 
 Chat Distiller requires Chrome 116 or later.
 

@@ -25,6 +25,22 @@
       margin: 0;
     }
 
+    .brand-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .brand-header h1 {
+      margin: 0;
+    }
+
+    .brand-icon {
+      width: 24px;
+      height: 24px;
+    }
+
     .view-header {
       display: flex;
       align-items: center;
@@ -83,6 +99,27 @@
       margin-top: 14px;
     }
 
+    .actions[data-tooltip] {
+      position: relative;
+    }
+
+    .actions[data-tooltip]:hover::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      z-index: 10;
+      left: 50%;
+      bottom: calc(100% + 6px);
+      transform: translateX(-50%);
+      padding: 6px 8px;
+      border-radius: 5px;
+      color: #ffffff;
+      background: #3c4043;
+      font-size: 12px;
+      line-height: 1.3;
+      white-space: nowrap;
+      pointer-events: none;
+    }
+
     button {
       border: 0;
       border-radius: 8px;
@@ -91,7 +128,7 @@
       font: inherit;
     }
 
-    #generate, #select-directory {
+    #generate, #select-directory, #refresh-page {
       width: 100%;
       color: #ffffff;
       background: #1a73e8;
@@ -108,8 +145,15 @@
       opacity: 0.55;
     }
 
+    #generate:disabled {
+      color: #80868b;
+      background: #e8eaed;
+      opacity: 1;
+    }
+
     #directory-status {
       background: #f8f9fa;
+      cursor: pointer;
     }
 
     #inline-settings {
@@ -162,7 +206,10 @@
 <body>
   <!-- Main View -->
   <div id="main-view">
-    <h1 data-i18n="extName">Chat Distiller</h1>
+    <div class="brand-header">
+      <img class="brand-icon" src="icons/icon-32.png" alt="">
+      <h1 data-i18n="extName">Chat Distiller</h1>
+    </div>
 
     <div class="label-row">
       <label for="directory-status" data-i18n="rootDirectory">Root directory</label>
@@ -191,6 +238,22 @@
     </div>
 
     <div id="status" class="muted"></div>
+  </div>
+
+  <!-- Page Refresh View -->
+  <div id="refresh-view" style="display: none;">
+    <div class="brand-header">
+      <img class="brand-icon" src="icons/icon-32.png" alt="">
+      <h1 data-i18n="extName">Chat Distiller</h1>
+    </div>
+    <div class="setting-card" style="background: #fef7e0; border-color: #fdd663;">
+      <p style="margin: 0;" data-i18n="pageRefreshRequired">
+        Chat Distiller was just installed or updated. Refresh this page before using the extension so it can connect to the current conversation correctly.
+      </p>
+    </div>
+    <div class="actions">
+      <button id="refresh-page" type="button" data-i18n="refreshPage">Refresh page</button>
+    </div>
   </div>
 
   <!-- Saving Progress View -->

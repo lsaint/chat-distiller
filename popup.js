@@ -1,10 +1,14 @@
 import { getStoredHandle } from "./db-utils.js";
-import { getSiteIdForUrl, isSupportedChatUrl } from "./sites.js";
+import {
+  checkPageReady,
+  getActiveTab,
+  startExtractionTask,
+} from "./extraction-client.js";
+import { isSupportedChatUrl } from "./sites.js";
 
 const {
   getDefaultPrompt,
   getLocale,
-  getOutputProtocolSuffix,
   isDefaultPrompt,
   localizeDocument,
   t,
@@ -12,9 +16,6 @@ const {
 const CURRENT_PROMPT_VERSION = 8;
 const DEFAULT_PROMPT = getDefaultPrompt();
 
-const MEMORY_PROTOCOL_MARKER = "<!-- chat-distiller:v1 -->";
-const MEMORY_PROTOCOL_END_MARKER = "<!-- /chat-distiller:v1 -->";
-const MEMORY_FILENAME_MARKER = "<!-- filename: topic-name.md -->";
 const ACTIVE_TASK_KEY = "activeExtractionTask";
 const ACTIVE_TASK_STATUSES = new Set(["starting", "generating", "saving"]);
 const ACTIONABLE_TASK_STATUSES = new Set([
@@ -23,11 +24,13 @@ const ACTIONABLE_TASK_STATUSES = new Set([
 ]);
 
 const mainView = document.querySelector("#main-view");
+const refreshView = document.querySelector("#refresh-view");
 const savingView = document.querySelector("#saving-view");
 
 const directoryStatus = document.querySelector("#directory-status");
 const statusElement = document.querySelector("#status");
 const generateButton = document.querySelector("#generate");
+const generateAction = generateButton.closest(".actions");
 const inlineSettingsButton = document.querySelector("#inline-settings");
 const resetPromptButton = document.querySelector("#reset-prompt");
 const promptInput = document.querySelector("#prompt");
@@ -37,6 +40,7 @@ const relativeDirectoryInput = document.querySelector("#relative-directory");
 const savingStatus = document.querySelector("#saving-status");
 const taskActionButton = document.querySelector("#cancel-saving");
 const cancelTaskButton = document.querySelector("#cancel-task");
+const refreshPageButton = document.querySelector("#refresh-page");
 
 let currentTask = null;
 
@@ -72,13 +76,16 @@ generateButton.addEventListener("click", async () => {
     const relativeDirectory = relativeDirectoryInput.value.trim() || "inbox";
     const filename = filenameInput.value.trim();
 
-    const [tab] = await chrome.tabs.query({
-      active: true,
-      currentWindow: true,
-    });
+    const tab = await getActiveTab();
 
     if (!tab?.id || !isSupportedChatUrl(tab.url)) {
       throw new Error(t("unsupportedChat"));
+    }
+
+    const pageStatus = await checkPageReady(tab);
+    if (!pageStatus.ready) {
+      showRefreshView();
+      return;
     }
 
     const rootHandle = await getStoredHandle();
@@ -103,17 +110,10 @@ generateButton.addEventListener("click", async () => {
     generateButton.disabled = true;
     setStatus(t("checkingSaved"), "muted");
 
-    const response = await chrome.runtime.sendMessage({
-      type: "START_EXTRACTION_TASK",
-      payload: {
-        jobId: crypto.randomUUID(),
-        tabId: tab.id,
-        prompt: enforceOutputProtocol(prompt),
-        relativeDirectory,
-        filename,
-        sourceUrl: tab.url,
-        siteId: getSiteIdForUrl(tab.url),
-      },
+    const response = await startExtractionTask({
+      prompt,
+      relativeDirectory,
+      filename,
     });
 
     if (!response?.ok) {
@@ -144,12 +144,24 @@ generateButton.addEventListener("click", async () => {
   }
 });
 
-inlineSettingsButton?.addEventListener("click", async () => {
+refreshPageButton?.addEventListener("click", async () => {
   try {
-    await openSidePanel();
-    window.close();
+    const tab = await getActiveTab();
+    if (tab?.id) {
+      await chrome.tabs.reload(tab.id);
+      window.close();
+    }
   } catch (error) {
     setStatus(normalizeError(error), "error");
+  }
+});
+
+inlineSettingsButton?.addEventListener("click", openSettingsFromPopup);
+directoryStatus?.addEventListener("click", openSettingsFromPopup);
+directoryStatus?.addEventListener("keydown", (event) => {
+  if (event.key === "Enter" || event.key === " ") {
+    event.preventDefault();
+    openSettingsFromPopup();
   }
 });
 
@@ -256,6 +268,15 @@ async function initialize() {
   currentTask = stored[ACTIVE_TASK_KEY] || null;
   await checkDirectoryStatus();
 
+  const tab = await getActiveTab();
+  if (isSupportedChatUrl(tab?.url)) {
+    const pageStatus = await checkPageReady(tab);
+    if (!pageStatus.ready) {
+      showRefreshView();
+      return;
+    }
+  }
+
   if (shouldOpenTaskView(currentTask)) {
     showSavingView();
     renderTask(currentTask);
@@ -325,6 +346,7 @@ function taskStatusLabel(status) {
 }
 
 function showMainView() {
+  refreshView.style.display = "none";
   savingView.style.display = "none";
   mainView.style.display = "block";
   checkDirectoryStatus().catch(() => {});
@@ -332,7 +354,14 @@ function showMainView() {
 
 function showSavingView() {
   mainView.style.display = "none";
+  refreshView.style.display = "none";
   savingView.style.display = "block";
+}
+
+function showRefreshView() {
+  mainView.style.display = "none";
+  savingView.style.display = "none";
+  refreshView.style.display = "block";
 }
 
 async function checkDirectoryStatus() {
@@ -348,7 +377,7 @@ async function checkDirectoryStatus() {
     if (displayPath && handle) {
       directoryStatus.value = displayPath;
       directoryStatus.className = "success";
-      generateButton.disabled = false;
+      setGenerateAvailability(true);
       inlineSettingsButton.style.display = "inline-block";
       inlineSettingsButton.textContent = t("changeSettings");
     } else {
@@ -356,14 +385,32 @@ async function checkDirectoryStatus() {
         ? t("pathNeedsAuthorization")
         : t("rootNotSet");
       directoryStatus.className = "error";
-      generateButton.disabled = true;
+      setGenerateAvailability(false);
       inlineSettingsButton.style.display = "inline-block";
       inlineSettingsButton.textContent = t("openSettings");
     }
   } catch {
     directoryStatus.value = "";
     directoryStatus.className = "error";
-    generateButton.disabled = true;
+    setGenerateAvailability(false);
+  }
+}
+
+function setGenerateAvailability(available) {
+  generateButton.disabled = !available;
+  if (available) {
+    delete generateAction.dataset.tooltip;
+  } else {
+    generateAction.dataset.tooltip = t("configureRootFirst");
+  }
+}
+
+async function openSettingsFromPopup() {
+  try {
+    await openSidePanel();
+    window.close();
+  } catch (error) {
+    setStatus(normalizeError(error), "error");
   }
 }
 
@@ -373,20 +420,6 @@ async function openSidePanel() {
     throw new Error(t("openSettingsFailed"));
   }
   await chrome.sidePanel.open({ tabId: tab.id });
-}
-
-function enforceOutputProtocol(prompt) {
-  if (
-    prompt.includes(MEMORY_PROTOCOL_MARKER) &&
-    prompt.includes(MEMORY_PROTOCOL_END_MARKER) &&
-    prompt.includes(MEMORY_FILENAME_MARKER) &&
-    prompt.includes("update_time") &&
-    prompt.includes("Canvas")
-  ) {
-    return prompt;
-  }
-
-  return `${prompt.trim()}\n\n${getOutputProtocolSuffix()}`;
 }
 
 function setStatus(message, className) {

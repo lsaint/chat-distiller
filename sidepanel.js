@@ -12,11 +12,14 @@ const relativeDirectoryInput = document.querySelector("#relative-directory");
 const selectButton = document.querySelector("#select-directory");
 const disconnectButton = document.querySelector("#disconnect");
 const statusElement = document.querySelector("#status");
+const CLOSE_COUNTDOWN_SECONDS = 5;
+let closeCountdownTimer = null;
 
 localizeDocument();
 initialize().catch((error) => setStatus(normalizeError(error), "error"));
 
 selectButton.addEventListener("click", async () => {
+  cancelSidePanelClose();
   try {
     if (!("showDirectoryPicker" in window)) {
       throw new Error(t("unsupportedPicker"));
@@ -42,6 +45,7 @@ selectButton.addEventListener("click", async () => {
     rootDirectoryInput.value = handle.name;
     setStatus(t("rootConnected", handle.name), "success");
     await retryPendingTaskSave();
+    scheduleSidePanelClose();
   } catch (error) {
     setStatus(
       error?.name === "AbortError" ? t("selectionCancelled") : normalizeError(error),
@@ -51,6 +55,7 @@ selectButton.addEventListener("click", async () => {
 });
 
 disconnectButton.addEventListener("click", async () => {
+  cancelSidePanelClose();
   try {
     await deleteStoredHandle();
     await chrome.storage.local.remove([
@@ -89,6 +94,62 @@ async function initialize() {
       : t("rootPermissionExpired", displayPath),
     permission === "granted" ? "success" : "error"
   );
+}
+
+function scheduleSidePanelClose() {
+  cancelSidePanelClose();
+
+  let secondsRemaining = CLOSE_COUNTDOWN_SECONDS;
+  const renderCountdown = () => {
+    setStatus(
+      t("rootConnectedClosing", String(secondsRemaining)),
+      "success"
+    );
+  };
+
+  renderCountdown();
+  closeCountdownTimer = setInterval(async () => {
+    secondsRemaining -= 1;
+    if (secondsRemaining > 0) {
+      renderCountdown();
+      return;
+    }
+
+    cancelSidePanelClose();
+    await closeCurrentSidePanel();
+  }, 1000);
+}
+
+function cancelSidePanelClose() {
+  if (closeCountdownTimer === null) {
+    return;
+  }
+
+  clearInterval(closeCountdownTimer);
+  closeCountdownTimer = null;
+}
+
+async function closeCurrentSidePanel() {
+  if (typeof chrome.sidePanel.close !== "function") {
+    window.close();
+    return;
+  }
+
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  if (!tab?.id || !tab.windowId) {
+    window.close();
+    return;
+  }
+
+  try {
+    await chrome.sidePanel.close({ tabId: tab.id });
+  } catch {
+    try {
+      await chrome.sidePanel.close({ windowId: tab.windowId });
+    } catch {
+      window.close();
+    }
+  }
 }
 
 async function retryPendingTaskSave() {

@@ -52,6 +52,14 @@ const TERMINAL_TASK_STATUSES = new Set([
 
 // ---- Message listener ----
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message?.type === "AIKITO_PING") {
+    sendResponse({
+      ok: true,
+      version: chrome.runtime.getManifest().version,
+    });
+    return false;
+  }
+
   if (message?.type === "EXTRACTION_TASK_STATUS") {
     updateMemoryCard(message.payload);
     if (

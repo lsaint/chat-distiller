@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.1.1] - 2026-08-08
+
+### Fixed
+
+- Fall back to requesting readwrite permission when `queryPermission()` reports a
+  stale non-granted state upon side-panel teardown.
+
 ## [1.1.0] - 2026-08-07
 
 ### Added
@@ -38,6 +45,7 @@ All notable changes to this project will be documented in this file.
 - Distribute the same deterministic extension ZIP through the Chrome Web Store
   submission process and GitHub Releases.
 
-[Unreleased]: https://github.com/lsaint/chat-distiller/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/lsaint/chat-distiller/compare/v1.1.1...HEAD
+[1.1.1]: https://github.com/lsaint/chat-distiller/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/lsaint/chat-distiller/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/lsaint/chat-distiller/releases/tag/v1.0.0

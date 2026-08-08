@@ -93,7 +93,15 @@ generateButton.addEventListener("click", async () => {
       throw new Error(t("noRoot"));
     }
 
-    const permission = await rootHandle.queryPermission({ mode: "readwrite" });
+    let permission = await rootHandle.queryPermission({ mode: "readwrite" });
+    if (permission !== "granted") {
+      // queryPermission can report a stale non-granted state right after the
+      // side panel that obtained the grant is torn down. requestPermission()
+      // here runs inside this click's user activation, so on platforms
+      // (observed on Windows) where the cached grant needs re-confirming it
+      // can resolve silently instead of forcing the user back into settings.
+      permission = await rootHandle.requestPermission({ mode: "readwrite" });
+    }
     if (permission !== "granted") {
       await openSidePanel();
       window.close();

@@ -373,7 +373,13 @@ async function saveTaskResult(task) {
       throw createPermissionError(t("localHandleMissing"));
     }
 
-    const permission = await rootHandle.queryPermission({ mode: "readwrite" });
+    let permission = await rootHandle.queryPermission({ mode: "readwrite" });
+    if (permission !== "granted") {
+      // queryPermission can report a stale non-granted state right after the
+      // side panel that obtained the grant is torn down; requestPermission()
+      // re-checks with the browser and often resolves silently in that case.
+      permission = await rootHandle.requestPermission({ mode: "readwrite" });
+    }
     if (permission !== "granted") {
       throw createPermissionError(t("localPermissionExpired"));
     }

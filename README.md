@@ -23,61 +23,33 @@
 
 Chat Distiller is a Chrome Manifest V3 extension that asks the AI in your current chat to distill the conversation, validates the structured response, and saves it as Markdown to a directory you explicitly authorize.
 
-There is no developer-controlled backend, analytics service, or cloud storage.
+There is no developer-controlled backend, analytics service, or cloud storage. It works independently with any local Markdown directory (Obsidian, Git repos, or local folders), and can also companion with [Aikito](https://github.com/lsaint/aikito).
 
-Chat Distiller works independently with any local Markdown knowledge base (Obsidian, Git repositories, or local folders). It is also the browser companion to [Aikito](https://github.com/lsaint/aikito), a Git-managed workspace for durable AI memory and reusable Agent resources.
+<p align="center">
+  <img src="docs/assets/chat-distiller-overview.png" alt="Chat Distiller overview">
+</p>
 
-*Chat Distiller captures durable knowledge. Aikito keeps it reusable.*
+## Why Chat Distiller
 
-## TL;DR
-
-Chat Distiller keeps the useful knowledge from an AI conversation without turning your notes folder into an archive of raw transcripts.
-
-Use a general-purpose exporter when you need a complete transcript. Use Chat Distiller when you want a concise note containing decisions, constraints, insights, and follow-up actions worth reusing.
-
-## Before / After
+General-purpose exporters capture full transcripts, but long AI conversations often bury key decisions under exploration and temporary context. Chat Distiller asks the AI to distill the conversation into a concise Markdown note—containing only reusable decisions, constraints, insights, and action items—and saves it directly to your local workspace. See [Why Chat Distiller](docs/why-chat-distiller.md) for the full background.
 
 | Raw Conversation (Before) | Concise Memory Note (After) |
 | --- | --- |
 | **Noisy & Verbose**: Full transcript containing exploration, trial-and-error, repetition, and temporary debugging context. | **Clean & Reusable**: Structured Markdown note written directly to your authorized local folder. |
 | **High Overhead**: Hard to review manually and wastes context tokens when fed back to Coding Agents. | **High Signal**: Contains only **Decisions & Rationale**, **Architectural Constraints**, **Rejected Alternatives**, and **Follow-up Actions**. |
 
-## Why Chat Distiller
-
-Long AI conversations often contain a small amount of durable knowledge buried under exploration, repetition, corrections, and temporary context. Copying the whole transcript preserves everything but makes the result difficult to review and reuse.
-
-Chat Distiller creates a smaller, structured artifact and saves it directly to your local knowledge workflow:
-
-```mermaid
-flowchart LR
-    A["Browser AI conversation"]
-    B["Distillation prompt"]
-    C["Validated Markdown"]
-    D["Authorized local folder"]
-    E["Aikito or another knowledge base"]
-
-    A --> B
-    B --> C
-    C --> D
-    D --> E
-```
-
-For the complete mental model on how Chat Distiller bridges browser-based AI design discussions and local Coding Agents, see [Why Chat Distiller](docs/why-chat-distiller.md).
-
 ## How It Works
 
 1. Authorize a local root directory during first-time setup.
 2. Open a supported AI conversation.
-3. Select **Generate and save** from the extension popup.
+3. Select **Generate and save** from the extension popup (optionally specifying a custom subdirectory or filename).
 4. Chat Distiller visibly inserts and submits the distillation prompt in the current conversation.
 5. The AI generates a structured Markdown result, which the extension validates.
-6. The background task writes the note to your chosen directory. The default subdirectory is `inbox` and can be changed.
+6. The background task writes the note to your directory (defaults to `inbox/`). If no filename is entered, it uses the AI-generated filename, falling back to a time-and-title format.
 
-You can close the popup after starting a task. Reopening it restores progress.
+You can close the popup after starting a task; reopening it restores progress. If saving fails, the conversation status card offers a retry option, and the side panel lets you reauthorize expired directory permissions.
 
-If saving fails, the compact status card inside the conversation offers a retry action. When directory permission has expired, the side panel lets you reauthorize the directory and continue saving.
-
-Chat Distiller records the relationship between a conversation and its saved file. It avoids duplicate saves when the file still exists and can reuse a valid result produced with the same prompt when the local file was removed.
+Chat Distiller records saved conversation metadata to prevent duplicate saves and can reuse existing valid prompt results.
 
 ## Supported Sites
 
@@ -111,11 +83,9 @@ Each GitHub Release also provides a `.sha256` file for verifying the extension a
 
 Chat Distiller requires Chrome 116 or later.
 
-## (Optional) Works with [Aikito](https://github.com/lsaint/aikito)
+## Works with [Aikito](https://github.com/lsaint/aikito)
 
-Chat Distiller can save Markdown to any local directory you authorize. It also serves as the browser companion to [Aikito](https://github.com/lsaint/aikito), a Git-managed workspace for durable AI memory and reusable Agent resources.
-
-Together, they form a local-first workflow:
+To use Chat Distiller with [Aikito](https://github.com/lsaint/aikito), select your Aikito workspace as the authorized root directory. New notes will be saved to `inbox/` by default, ready for review and organization into durable memory.
 
 ```mermaid
 flowchart LR
@@ -125,30 +95,15 @@ flowchart LR
     C -->|"Reuse Context"| D
 ```
 
-To use them together, select your [Aikito](https://github.com/lsaint/aikito) workspace as the authorized root directory. Chat Distiller saves new notes to `inbox/` by default, where they can be reviewed and organized into the appropriate global or project memory scope.
+## Privacy & Permissions
 
-[Aikito](https://github.com/lsaint/aikito) is optional. Chat Distiller works with Obsidian vaults, Git repositories, and other local Markdown knowledge bases without requiring additional software.
+Chat Distiller operates strictly locally with zero external tracking servers:
 
-## Local-First by Design
+- **Local Files & Storage**: Generated Markdown is written only to your authorized folder. Settings, task state, and prompt fingerprints stay in Chrome extension storage (`storage` permission), while directory handles remain in local IndexedDB.
+- **No Third-Party Backend**: Chat content is never uploaded to external servers. The only AI request is the prompt submitted in your active browser chat session (`host_permissions` limited strictly to supported HTTPS chat origins).
+- **Background Tasks & Side Panel**: Uses `alarms` to recover pending tasks/timeouts and `sidePanel` to maintain directory authorization flows during folder selection.
 
-- Generated Markdown is written only to the directory you select.
-- Settings, recovery state, conversation identifiers, and prompt fingerprints stay in Chrome extension storage.
-- The selected directory handle stays in browser-managed IndexedDB.
-- Chat content is not uploaded to a developer-controlled server.
-- The only AI request is the prompt visibly submitted to the supported chat service already hosting the conversation.
-
-See the [Privacy Policy](PRIVACY.md) for the complete data-handling details. See [Local Storage and Privacy](docs/local-storage-and-privacy.md) for the storage model and trust boundaries.
-
-## Permissions
-
-Chat Distiller requests only the permissions needed for its local-first workflow:
-
-- `storage` stores settings, recovery state, conversation identifiers, and prompt fingerprints.
-- `alarms` lets the background worker recover active tasks and enforce timeouts.
-- `sidePanel` keeps directory authorization available while Chrome's folder picker is open and allows recovery flows to reopen the authorization UI.
-- Host permissions allow Chat Distiller to interact only with explicitly supported HTTPS AI chat pages declared in the manifest.
-
-Review `manifest.json` for the exact permission list used by the current release.
+See our [Privacy Policy](PRIVACY.md) and [Local Storage and Privacy](docs/local-storage-and-privacy.md) for full details.
 
 ## Design Choices
 
@@ -158,22 +113,6 @@ Review `manifest.json` for the exact permission list used by the current release
 - **Compact conversation UI.** The distillation prompt and generated response collapse into a status card with an explicit option to reveal the content.
 - **No silent overwrite.** Filename collisions receive a numeric suffix.
 - **User-visible automation.** Prompt insertion and submission happen in the active chat and only after a user action.
-
-## Usage Details
-
-The default save location under the authorized root directory is:
-
-```text
-inbox
-```
-
-The popup can override the subdirectory for the current save. The side panel controls the default subdirectory and root directory.
-
-If no filename is entered, Chat Distiller uses the validated English filename returned by the AI, with a time-and-title fallback where needed.
-
-The `sidePanel` permission keeps directory authorization UI alive while Chrome's folder picker has focus and lets an error card reopen the authorization flow.
-
-Host permissions are limited to the supported HTTPS chat origins declared in the manifest.
 
 ## Internationalization
 

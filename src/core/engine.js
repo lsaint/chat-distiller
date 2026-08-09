@@ -11,12 +11,8 @@ const {
   stripProtocolMarker,
   normalizeRenderedPromptText,
 } = globalThis.ChatDistiller.protocol;
-const {
-  getElementText,
-  getVisibleElementText,
-  waitForElement,
-  sleep,
-} = globalThis.ChatDistiller.dom;
+const { getElementText, getVisibleElementText, waitForElement, sleep } =
+  globalThis.ChatDistiller.dom;
 const {
   CARD_ATTRIBUTE,
   configureCardUi,
@@ -77,6 +73,15 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return false;
   }
 
+  if (message?.type === "RETRY_EXTRACTION_FROM_DOM") {
+    extractLatestFromDom(message.payload)
+      .then((result) => sendResponse(result))
+      .catch((error) =>
+        sendResponse({ ok: false, error: normalizeError(error) }),
+      );
+    return true;
+  }
+
   if (message?.type !== "START_EXTRACTION") {
     return false;
   }
@@ -100,16 +105,22 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
   extractConversationMemory(payload, runId)
     .then(async (result) => {
-      await deliverExtractionResult({
-        ok: true,
-        ...result,
-      }, runId);
+      await deliverExtractionResult(
+        {
+          ok: true,
+          ...result,
+        },
+        runId,
+      );
     })
     .catch(async (error) => {
-      const delivered = await deliverExtractionResult({
-        ok: false,
-        error: normalizeError(error),
-      }, runId);
+      const delivered = await deliverExtractionResult(
+        {
+          ok: false,
+          error: normalizeError(error),
+        },
+        runId,
+      );
       if (delivered) {
         updateMemoryCard({
           jobId: payload.jobId,
@@ -168,7 +179,7 @@ async function extractConversationMemory(config = {}, runId) {
   activeInitialAssistantSet = new WeakSet(initialElements);
   activeTargetMessage = null;
   activeBaselineProtocolContent = readProtocolContent(
-    initialElements[initialElements.length - 1]
+    initialElements[initialElements.length - 1],
   );
 
   try {
@@ -186,7 +197,10 @@ async function extractConversationMemory(config = {}, runId) {
     });
   }
 
-  const content = await waitForStableAssistantContent(generatedElement, runId);
+  const content = await waitForStableAssistantContent(
+    generatedElement,
+    runId,
+  );
 
   if (!content.trim()) {
     throw new Error(t("emptyAiResponse"));
@@ -243,7 +257,7 @@ function readProtocolContent(element) {
 
   const selector = adapter.protocolBlockSelector || "pre code";
   const protocolBlock = Array.from(element.querySelectorAll(selector)).find(
-    (codeBlock) => getElementText(codeBlock).includes(MEMORY_PROTOCOL_MARKER)
+    (codeBlock) => getElementText(codeBlock).includes(MEMORY_PROTOCOL_MARKER),
   );
   if (!protocolBlock) {
     return "";
@@ -313,7 +327,8 @@ function findReusableExtraction(payload = {}) {
   }
 
   const assistantMessages = adapter.getAssistantMessages();
-  const lastAssistantMessage = assistantMessages[assistantMessages.length - 1];
+  const lastAssistantMessage =
+    assistantMessages[assistantMessages.length - 1];
   if (!lastAssistantMessage) {
     return { ok: true, reusable: false };
   }
@@ -353,6 +368,58 @@ function findReusableExtraction(payload = {}) {
       siteId: adapter.siteId,
     },
   };
+}
+
+function extractLatestFromDom(payload = {}) {
+  const assistantMessages = adapter.getAssistantMessages();
+  const lastAssistantMessage =
+    assistantMessages[assistantMessages.length - 1];
+  if (!lastAssistantMessage) {
+    return Promise.resolve({ ok: false, error: t("requiredElementMissing") });
+  }
+
+  const protocolContent = readProtocolContent(lastAssistantMessage);
+  if (protocolContent) {
+    if (!isProtocolContentComplete(protocolContent)) {
+      return Promise.resolve({ ok: false, error: t("protocolIncomplete") });
+    }
+    const content = stripProtocolMarker(protocolContent);
+    const filename = extractProtocolFilename(protocolContent);
+    ensureMemoryCard(lastAssistantMessage, payload.jobId, {
+      status: "saving",
+      statusMessage: t("savingLocal"),
+    });
+    return Promise.resolve({
+      ok: true,
+      result: {
+        content,
+        filename,
+        title: adapter.getConversationTitle(),
+        sourceUrl: location.href,
+        siteId: adapter.siteId,
+      },
+    });
+  }
+
+  const extractedText = adapter.extractMessageText(lastAssistantMessage);
+  if (extractedText && extractedText.trim()) {
+    ensureMemoryCard(lastAssistantMessage, payload.jobId, {
+      status: "saving",
+      statusMessage: t("savingLocal"),
+    });
+    return Promise.resolve({
+      ok: true,
+      result: {
+        content: extractedText,
+        filename: "",
+        title: adapter.getConversationTitle(),
+        sourceUrl: location.href,
+        siteId: adapter.siteId,
+      },
+    });
+  }
+
+  return Promise.resolve({ ok: false, error: t("markdownMissing") });
 }
 
 // ---- Wait for new assistant message ----
@@ -415,7 +482,8 @@ async function waitForStableAssistantContent(element, runId) {
   let rawStableSince = 0;
 
   const contentStableMs = adapter.contentStableMs || 5_000;
-  const contentStableWithActionsMs = adapter.contentStableWithActionsMs || 1_000;
+  const contentStableWithActionsMs =
+    adapter.contentStableWithActionsMs || 1_000;
 
   while (Date.now() < timeoutAt) {
     assertActiveRun(runId);
@@ -431,12 +499,16 @@ async function waitForStableAssistantContent(element, runId) {
       });
     }
 
-    const currentText = current ? await extractMessageTextWithProtocol(current) : "";
+    const currentText = current
+      ? await extractMessageTextWithProtocol(current)
+      : "";
     assertActiveRun(runId);
     const rawText = current ? extractRawMessageText(current) : "";
     const now = Date.now();
     const generationActive = adapter.isGenerationActive();
-    const responseComplete = current ? adapter.hasResponseActions(current) : false;
+    const responseComplete = current
+      ? adapter.hasResponseActions(current)
+      : false;
 
     if (currentText && currentText === lastText) {
       if (!stableSince) {
@@ -450,7 +522,7 @@ async function waitForStableAssistantContent(element, runId) {
           responseComplete,
           stableDuration,
           contentStableMs,
-          contentStableWithActionsMs
+          contentStableWithActionsMs,
         )
       ) {
         return currentText;
@@ -466,20 +538,19 @@ async function waitForStableAssistantContent(element, runId) {
       }
 
       const rawStableDuration = now - rawStableSince;
-      const rawRequiredStableMs = responseComplete
-        ? contentStableWithActionsMs
-        : contentStableMs;
-      if (
-        !currentText &&
-        !generationActive &&
-        rawStableDuration >= rawRequiredStableMs
-      ) {
-        const protocolContent = readProtocolContent(current);
+      const protocolIncompleteStableMs = 15_000;
+
+      if (!currentText && !generationActive) {
+        const protocolContent = current ? readProtocolContent(current) : "";
         if (protocolContent && !isProtocolContentComplete(protocolContent)) {
-          throw new Error(t("protocolIncomplete"));
-        }
-        if (responseComplete) {
-          throw new Error(t("markdownMissing"));
+          if (rawStableDuration >= protocolIncompleteStableMs) {
+            throw new Error(t("protocolIncomplete"));
+          }
+        } else if (responseComplete && !protocolContent) {
+          const rawRequiredStableMs = contentStableWithActionsMs;
+          if (rawStableDuration >= rawRequiredStableMs) {
+            throw new Error(t("markdownMissing"));
+          }
         }
       }
     } else {
@@ -490,11 +561,24 @@ async function waitForStableAssistantContent(element, runId) {
     await sleep(500);
   }
 
-  throw new Error(t("responseTimeoutDetails", [
-    String(lastText.length),
-    String(lastRawText.length),
-    String(Boolean(target?.isConnected)),
-  ]));
+  const finalMessage = findCurrentGeneratedMessage(target);
+  const finalProtocolContent = finalMessage
+    ? readProtocolContent(finalMessage)
+    : "";
+  if (
+    finalProtocolContent &&
+    !isProtocolContentComplete(finalProtocolContent)
+  ) {
+    throw new Error(t("protocolIncomplete"));
+  }
+
+  throw new Error(
+    t("responseTimeoutDetails", [
+      String(lastText.length),
+      String(lastRawText.length),
+      String(Boolean(target?.isConnected)),
+    ]),
+  );
 }
 
 function findCurrentGeneratedMessage(element) {
@@ -530,7 +614,9 @@ function extractRawMessageText(element) {
   }
 
   const clone = element.cloneNode(true);
-  clone.querySelectorAll(`[${CARD_ATTRIBUTE}]`).forEach((node) => node.remove());
+  clone
+    .querySelectorAll(`[${CARD_ATTRIBUTE}]`)
+    .forEach((node) => node.remove());
   return getElementText(clone).trim();
 }
 
@@ -541,7 +627,7 @@ function shouldFinalizeContent(
   responseComplete,
   stableDuration,
   contentStableMs,
-  contentStableWithActionsMs
+  contentStableWithActionsMs,
 ) {
   if (generationActive) {
     return false;
@@ -561,11 +647,7 @@ async function deliverExtractionResult(result, runId = activeRunId) {
   if (result) {
     pendingExtractionResult = result;
   }
-  if (
-    !activeJobId ||
-    !pendingExtractionResult ||
-    resultDeliveryStarted
-  ) {
+  if (!activeJobId || !pendingExtractionResult || resultDeliveryStarted) {
     return false;
   }
 
@@ -740,14 +822,17 @@ function observeProtocolMessages() {
   const protocolSelector = adapter.protocolBlockSelector || "pre code";
 
   injectCardStyles();
-  document.querySelectorAll(protocolSelector).forEach(collapseProtocolMessage);
+  document
+    .querySelectorAll(protocolSelector)
+    .forEach(collapseProtocolMessage);
 
   const observer = new MutationObserver((records) => {
     queueProtocolResultDelivery();
 
     for (const record of records) {
       if (record.type === "characterData") {
-        const codeBlock = record.target.parentElement?.closest(protocolSelector);
+        const codeBlock =
+          record.target.parentElement?.closest(protocolSelector);
         if (codeBlock) {
           collapseProtocolMessage(codeBlock);
         }
@@ -768,7 +853,9 @@ function observeProtocolMessages() {
         if (node.matches(protocolSelector)) {
           collapseProtocolMessage(node);
         }
-        node.querySelectorAll?.(protocolSelector).forEach(collapseProtocolMessage);
+        node
+          .querySelectorAll?.(protocolSelector)
+          .forEach(collapseProtocolMessage);
       }
     }
   });
@@ -782,7 +869,10 @@ function observeProtocolMessages() {
 
 function normalizeError(error) {
   const msg = error instanceof Error ? error.message : String(error);
-  if (msg.includes("Could not establish connection") || msg.includes("Receiving end does not exist")) {
+  if (
+    msg.includes("Could not establish connection") ||
+    msg.includes("Receiving end does not exist")
+  ) {
     return t("communicationFailed");
   }
   return msg;

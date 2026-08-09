@@ -23,61 +23,33 @@
 
 Chat Distiller 是一个 Chrome Manifest V3 扩展。它会请求当前对话中的 AI 提炼聊天内容，校验结构化回复，并将结果作为 Markdown 保存到你明确授权的本地目录。
 
-它没有开发者控制的后端、分析服务或云存储。
+它没有开发者控制的后端、分析服务或云存储。它可以独立配合任意本地 Markdown 目录（如 Obsidian Vault、Git 仓库等）使用，也可作为 [Aikito](https://github.com/lsaint/aikito) 的浏览器端配套工具。
 
-Chat Distiller 可以独立配合任何本地 Markdown 知识库（如 Obsidian、Git 仓库或普通本地文件夹）使用。它也是 [Aikito](https://github.com/lsaint/aikito) 的浏览器端配套工具；[Aikito](https://github.com/lsaint/aikito) 是一个通过 Git 管理持久 AI 记忆与可复用 Agent 资源的工作区。
+<p align="center">
+  <img src="docs/assets/chat-distiller-overview.png" alt="Chat Distiller 工作流程概览">
+</p>
 
-*Chat Distiller 负责浏览器端记忆提炼；Aikito 负责长期保存与跨 Agent 复用。*
+## 为什么需要 Chat Distiller
 
-## 简而言之
-
-Chat Distiller 保留 AI 对话中真正有用的知识，而不会把你的笔记目录变成原始聊天记录仓库。
-
-需要完整聊天记录时，请使用通用导出工具；需要一篇简洁笔记，保留值得复用的决策、约束、洞察和后续行动时，请使用 Chat Distiller。
-
-## 对比：提炼前 vs 提炼后
+通用导出工具保存的是完整的聊天记录，而长对话中往往夹杂着大量的试探、纠错与临时上下文。Chat Distiller 请求 AI 将对话提炼为只保留可复用决策、约束、洞察与行动项的 Markdown 笔记，并直接写入本地工作区。完整设计思考请参阅[为什么需要 Chat Distiller](docs/why-chat-distiller.zh-CN.md)。
 
 | 提炼前的原始对话 (Before) | 提炼后的 Markdown 笔记 (After) |
 | --- | --- |
 | **冗长且杂乱**：包含试探、重复、误解、被否定的临时方案和调优上下文的完整聊天记录。 | **干净且可复用**：直接写入授权本地目录的结构化 Markdown 笔记。 |
 | **阅读成本高**：人工审阅费时，作为 Prompt 喂给 Coding Agent 会浪费大量上下文 Token。 | **高信息密度**：仅保留 **决策及依据**、**架构约束**、**被否定的方案** 与 **后续行动**。 |
 
-## 为什么需要 Chat Distiller
-
-一段很长的 AI 对话通常只有少量内容值得长期保留，其余是探索、重复、修正和临时上下文。完整复制聊天虽然没有遗漏，却会让结果难以审阅和复用。
-
-Chat Distiller 会生成更小、更结构化的成果，并把它直接送入你的本地知识工作流：
-
-```mermaid
-flowchart LR
-    A["浏览器 AI 对话"]
-    B["提炼提示词"]
-    C["经过校验的 Markdown"]
-    D["已授权的本地目录"]
-    E["Aikito 或其他知识库"]
-
-    A --> B
-    B --> C
-    C --> D
-    D --> E
-```
-
-关于 Chat Distiller 如何连接网页端 AI 设计讨论与本地 Coding Agent 实施的完整设计思考，请参阅[为什么需要 Chat Distiller](docs/why-chat-distiller.zh-CN.md)。
-
 ## 工作方式
 
 1. 首次使用时授权一个本地根目录。
 2. 打开受支持的 AI 对话。
-3. 在扩展 Popup 中选择“生成并保存”。
+3. 在扩展 Popup 中选择“生成并保存”（可临时指定子目录或自定义文件名）。
 4. Chat Distiller 在当前对话中可见地填入并提交提炼提示词。
 5. AI 生成结构化 Markdown，扩展对结果进行校验。
-6. 后台任务把笔记写入所选目录；默认子目录为 `inbox`，可以修改。
+6. 后台任务把笔记写入所选目录（默认为 `inbox/`）。若文件名留空，则使用 AI 生成的文件名，必要时回退为时间与标题组合。
 
-任务启动后可以关闭 Popup，再次打开时会恢复进度。
+任务启动后可以关闭 Popup，再次打开时恢复进度。若保存失败或权限失效，可通过对话内状态卡片重试或通过侧边栏重新授权。
 
-保存失败时，对话内的紧凑状态卡片会提供重试操作。目录权限失效时，可以通过侧边栏重新授权目录并继续保存。
-
-Chat Distiller 会记录对话与已保存文件的关系。文件仍然存在时，它会避免重复保存；如果本地文件已被删除，而现有结果由相同提示词生成且协议有效，它可以直接复用该结果。
+Chat Distiller 会记录对话与文件的关联状态，防止重复保存，并在文件被删时复用已有的有效结果。
 
 ## 支持的站点
 
@@ -111,9 +83,9 @@ Chrome Web Store 版本正在等待审核。
 
 Chat Distiller 要求 Chrome 116 或更高版本。
 
-## （可选）与 [Aikito](https://github.com/lsaint/aikito) 配合使用
+## 与 [Aikito](https://github.com/lsaint/aikito) 配合使用
 
-Chat Distiller 可以把 Markdown 保存到你授权的任意本地目录。它也可以作为 [Aikito](https://github.com/lsaint/aikito) 的浏览器端配套工具：
+搭配 [Aikito](https://github.com/lsaint/aikito) 使用时，只需将 Aikito 工作区选为授权根目录。扩展默认将新笔记保存至 `inbox/`，方便审阅并归档为持久记忆。
 
 ```mermaid
 flowchart LR
@@ -123,30 +95,15 @@ flowchart LR
     C -->|"跨 Agent 复用"| D
 ```
 
-将 [Aikito](https://github.com/lsaint/aikito) 工作区选为授权根目录即可组合使用。Chat Distiller 默认把新笔记保存到 `inbox/`，你可以在那里审阅内容，再将其整理到适当的全局或项目 memory scope。
+## 隐私与权限
 
-[Aikito](https://github.com/lsaint/aikito) 不是必需依赖。Chat Distiller 也适用于 Obsidian Vault、Git 仓库和其他本地 Markdown 知识库。
+Chat Distiller 遵循完全本地化的设计，没有任何云端追踪服务器：
 
-## 本地优先设计
+- **本地存储与写入**：生成的 Markdown 仅写入你授权的本地目录。设置、任务状态与提示词指纹保存在扩展本地存储（`storage` 权限），目录句柄存放在本地 IndexedDB。
+- **无第三方后端**：聊天内容绝不上传至任何开发者服务器。唯一的 AI 请求是在你当前的浏览器 AI 对话中提交提示词（`host_permissions` 仅限于 Manifest 声明的受支持 AI 站点）。
+- **后台与侧边栏**：使用 `alarms` 恢复任务与超时控制；使用 `sidePanel` 在选择文件夹及重新授权时保持界面交互。
 
-- 生成的 Markdown 只会写入你选择的目录。
-- 设置、恢复状态、对话标识和提示词指纹保存在 Chrome 扩展存储中。
-- 所选目录的 handle 保存在浏览器管理的 IndexedDB 中。
-- 对话内容不会上传到开发者控制的服务器。
-- 唯一的 AI 请求，是向当前承载这段对话的网站可见地提交提炼提示词。
-
-完整的数据处理说明见[隐私政策](PRIVACY.md)，存储模型与信任边界见[本地存储与隐私](docs/local-storage-and-privacy.md)。
-
-## 权限
-
-Chat Distiller 只申请本地优先工作流所需的权限：
-
-- `storage`：保存设置、恢复状态、对话标识和提示词指纹。
-- `alarms`：唤醒后台 worker，以恢复任务并执行超时控制。
-- `sidePanel`：在 Chrome 文件夹选择器打开时保持目录授权界面，并允许恢复流程重新打开授权 UI。
-- Host permissions：只允许扩展与 manifest 中明确声明的受支持 HTTPS AI Chat 页面交互。
-
-当前版本的准确权限列表以 `manifest.json` 为准。
+完整细节请参阅[隐私政策](PRIVACY.md)与[本地存储与隐私](docs/local-storage-and-privacy.md)。
 
 ## 设计选择
 
@@ -156,22 +113,6 @@ Chat Distiller 只申请本地优先工作流所需的权限：
 - **紧凑的对话 UI。** 提炼提示词和生成回复会折叠为状态卡片，并提供明确的内容展开入口。
 - **不静默覆盖。** 文件名冲突时自动追加数字后缀。
 - **用户可见的自动化。** 只有用户主动操作后，扩展才会在当前页面填入并提交提示词。
-
-## 使用细节
-
-已授权根目录下的默认保存位置为：
-
-```text
-inbox
-```
-
-Popup 可以为本次保存覆盖子目录，侧边栏控制默认子目录与根目录。
-
-文件名留空时，Chat Distiller 使用 AI 返回且经过校验的英文文件名；必要时回退为时间和标题组合生成的文件名。
-
-`sidePanel` 权限让目录授权 UI 在 Chrome 文件夹选择器获得焦点时保持存活，也让异常状态卡片可以重新打开授权流程。
-
-Host permissions 仅覆盖 manifest 中声明的受支持 HTTPS Chat 来源。
 
 ## 国际化
 

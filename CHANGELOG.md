@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.1.2] - 2026-08-09
+
+### Changed
+
+- Limit default-prompt Obsidian wikilinks to at most five concrete entities
+  mentioned in the conversation.
+
+### Fixed
+
+- Keep waiting when the output protocol is temporarily incomplete instead of
+  failing from an intermediate DOM snapshot.
+- Let recoverable save failures retry extraction from the latest DOM content of
+  the original generated response without submitting another prompt.
+
 ## [1.1.1] - 2026-08-08
 
 ### Fixed
@@ -45,7 +59,8 @@ All notable changes to this project will be documented in this file.
 - Distribute the same deterministic extension ZIP through the Chrome Web Store
   submission process and GitHub Releases.
 
-[Unreleased]: https://github.com/lsaint/chat-distiller/compare/v1.1.1...HEAD
+[Unreleased]: https://github.com/lsaint/chat-distiller/compare/v1.1.2...HEAD
+[1.1.2]: https://github.com/lsaint/chat-distiller/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/lsaint/chat-distiller/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/lsaint/chat-distiller/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/lsaint/chat-distiller/releases/tag/v1.0.0

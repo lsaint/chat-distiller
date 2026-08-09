@@ -1,6 +1,8 @@
 {
   "extName": { "message": "Chat Distiller" },
-  "extDescription": { "message": "点击生成后，扩展会在当前 ChatGPT 对话中自动填写并发送提炼提示词，再将生成的 Markdown 保存到用户选择的本地目录。" },
+  "extDescription": {
+    "message": "点击生成后，扩展会在当前 ChatGPT 对话中自动填写并发送提炼提示词，再将生成的 Markdown 保存到用户选择的本地目录。"
+  },
   "settingsTitle": { "message": "Chat Distiller 设置" },
   "checkingRoot": { "message": "正在检查根目录…" },
   "rootDirectory": { "message": "根目录" },
@@ -11,18 +13,28 @@
   "filenamePlaceholder": { "message": "留空则自动生成" },
   "distillationPrompt": { "message": "整理提示词" },
   "resetDefault": { "message": "重置默认" },
-  "autoDisclosure": { "message": "点击“生成并保存”后，扩展会在当前 ChatGPT 对话框中自动填写并发送上述提示词。" },
+  "autoDisclosure": {
+    "message": "点击“生成并保存”后，扩展会在当前 ChatGPT 对话框中自动填写并发送上述提示词。"
+  },
   "generateAndSave": { "message": "生成并保存" },
-  "pageRefreshRequired": { "message": "Chat Distiller 刚刚安装或更新。请先刷新当前页面，让插件正确连接到这段对话，然后再使用。" },
+  "pageRefreshRequired": {
+    "message": "Chat Distiller 刚刚安装或更新。请先刷新当前页面，让插件正确连接到这段对话，然后再使用。"
+  },
   "refreshPage": { "message": "刷新页面" },
   "back": { "message": "返回" },
   "backArrow": { "message": "← 返回" },
   "rootSettings": { "message": "根目录与子目录设置" },
   "rootIntro": { "message": "选择或更改本地根目录。" },
-  "standaloneSettingsIntro": { "message": "选择本地根目录。扩展只会在已授权的目录及其子目录中创建 Memory 文件。" },
-  "firstAuthorizationHint": { "message": "受 Chrome 权限机制限制，首次使用时需在此授权本地目录；授权会保留，后续通常无需再次设置。" },
+  "standaloneSettingsIntro": {
+    "message": "选择本地根目录。扩展只会在已授权的目录及其子目录中创建 Memory 文件。"
+  },
+  "firstAuthorizationHint": {
+    "message": "受 Chrome 权限机制限制，首次使用时需在此授权本地目录；授权会保留，后续通常无需再次设置。"
+  },
   "configureRootFirst": { "message": "请先设置根目录" },
-  "rootConnectedClosing": { "message": "根目录连接成功。请点击顶部扩展图标开始生成；侧边栏将在 $1 秒后关闭。" },
+  "rootConnectedClosing": {
+    "message": "根目录连接成功。请点击顶部扩展图标开始生成；侧边栏将在 $1 秒后关闭。"
+  },
   "rootPathLabel": { "message": "已授权根目录" },
   "rootPathPlaceholder": { "message": "尚未选择目录" },
   "selectRoot": { "message": "更改根目录" },
@@ -37,7 +49,9 @@
   "promptReset": { "message": "已恢复为默认提示词。" },
   "unsupportedChat": { "message": "请先打开一个支持的 AI 对话页面。" },
   "noRoot": { "message": "尚未设置根目录，请先打开设置选择根目录。" },
-  "rootPermissionRequired": { "message": "未获得根目录读写权限，请允许后重试。" },
+  "rootPermissionRequired": {
+    "message": "未获得根目录读写权限，请允许后重试。"
+  },
   "checkingSaved": { "message": "正在检查当前会话的保存状态…" },
   "startTaskFailed": { "message": "无法启动后台任务。" },
   "alreadySaved": { "message": "当前会话已保存到本地，不再重复保存：$1" },
@@ -45,7 +59,9 @@
   "unsupportedPicker": { "message": "当前 Chrome 版本不支持目录选择。" },
   "readWritePermissionRequired": { "message": "未授予读写权限。" },
   "requestingPermission": { "message": "正在请求本地目录权限…" },
-  "missingHandle": { "message": "本地目录句柄不存在，请打开设置重新选择目录。" },
+  "missingHandle": {
+    "message": "本地目录句柄不存在，请打开设置重新选择目录。"
+  },
   "writePermissionRequired": { "message": "未获得本地目录写入权限。" },
   "rootConnected": { "message": "根目录已连接：$1" },
   "selectionCancelled": { "message": "已取消目录选择。" },
@@ -63,26 +79,43 @@
   "taskSuccess": { "message": "保存成功。" },
   "taskError": { "message": "任务失败。" },
   "taskUnknown": { "message": "任务状态未知。" },
-  "pathNeedsAuthorization": { "message": "目录路径尚未授权，请打开设置选择根目录。" },
-  "rootPermissionExpired": { "message": "根目录 $1 的权限已失效，请重新选择或刷新授权。" },
-  "communicationFailed": { "message": "无法与 AI 会话标签页建立通信，请刷新该页面后重试。" },
+  "pathNeedsAuthorization": {
+    "message": "目录路径尚未授权，请打开设置选择根目录。"
+  },
+  "rootPermissionExpired": {
+    "message": "根目录 $1 的权限已失效，请重新选择或刷新授权。"
+  },
+  "communicationFailed": {
+    "message": "无法与 AI 会话标签页建立通信，请刷新该页面后重试。"
+  },
   "generationTimeout": { "message": "等待 AI 生成超时，请重新尝试。" },
   "tabClosed": { "message": "AI 会话标签页已关闭，生成中断。" },
   "tabNavigated": { "message": "AI 会话页面已刷新或导航，生成中断。" },
   "taskBlocked": { "message": "已有任务正在运行或等待保存，请先处理该任务。" },
   "submittingPrompt": { "message": "正在向 AI 提交整理提示词…" },
-  "reusingResult": { "message": "检测到相同整理提示词，正在直接保存现有 Memory…" },
+  "reusingResult": {
+    "message": "检测到相同整理提示词，正在直接保存现有 Memory…"
+  },
   "extractionStartFailed": { "message": "无法启动整理任务。" },
-  "generatingBackground": { "message": "AI 正在整理生成中，关闭插件弹窗不会中断任务。" },
-  "updateInterrupted": { "message": "扩展已更新，原任务已中断，请返回后重新生成。" },
+  "generatingBackground": {
+    "message": "AI 正在整理生成中，关闭插件弹窗不会中断任务。"
+  },
+  "updateInterrupted": {
+    "message": "扩展已更新，原任务已中断，请返回后重新生成。"
+  },
   "updateInterruptedError": { "message": "扩展更新中断了原生成任务。" },
   "extractionFailed": { "message": "AI 内容提取失败。" },
   "invalidMarkdown": { "message": "AI 返回的 Markdown 内容为空或过大。" },
   "writingResult": { "message": "生成完成，正在写入本地目录…" },
   "noRetryResult": { "message": "没有可以继续保存的生成结果。" },
   "retryWriting": { "message": "正在重新写入本地目录…" },
-  "localHandleMissing": { "message": "本地存储目录句柄不存在，请重新选择目录。" },
-  "localPermissionExpired": { "message": "本地目录权限已失效，请打开插件并授权后继续保存。" },
+  "recheckingDom": { "message": "正在重新读取页面内容…" },
+  "localHandleMissing": {
+    "message": "本地存储目录句柄不存在，请重新选择目录。"
+  },
+  "localPermissionExpired": {
+    "message": "本地目录权限已失效，请打开插件并授权后继续保存。"
+  },
   "savedReused": { "message": "未重复发送提示词，已保存现有 Memory：$1" },
   "savedPath": { "message": "保存成功：$1" },
   "invalidTask": { "message": "生成任务参数无效。" },
@@ -101,16 +134,24 @@
   "sendButtonDisabled": { "message": "发送按钮不可用。" },
   "promptNotAccepted": { "message": "编辑器未接受提示词。" },
   "requiredElementMissing": { "message": "未找到所需的页面元素。" },
-  "protocolIncomplete": { "message": "AI 已完成回答，但 Memory 协议不完整。英文文件名或结束标记缺失，未执行保存。" },
-  "markdownMissing": { "message": "AI 已完成回答，但没有返回可保存的 Markdown 代码块。请重置默认提示词后重试。" },
+  "protocolIncomplete": {
+    "message": "AI 已完成回答，但 Memory 协议不完整。英文文件名或结束标记缺失，未执行保存。"
+  },
+  "markdownMissing": {
+    "message": "AI 已完成回答，但没有返回可保存的 Markdown 代码块。请重置默认提示词后重试。"
+  },
   "contentCollapsed": { "message": "Memory 提示词与回答已折叠，可展开查看。" },
   "responseStartTimeout": { "message": "等待 AI 开始回答超时。" },
-  "responseTimeoutDetails": { "message": "等待 AI 回答完成超时。已提取长度：$1；原始长度：$2；消息仍连接：$3。" },
+  "responseTimeoutDetails": {
+    "message": "等待 AI 回答完成超时。已提取长度：$1；原始长度：$2；消息仍连接：$3。"
+  },
   "unauthorizedSender": { "message": "网页无权执行此操作。" },
   "staleTaskUpdate": { "message": "该任务已不再处于活动状态。" },
   "extractionAlreadyRunning": { "message": "当前页面已有提炼任务正在运行。" },
   "extractionCancelled": { "message": "后台任务已结束，本次提炼已取消。" },
-  "resultIgnored": { "message": "后台任务已不再接收本次结果，请重新开始提炼。" },
+  "resultIgnored": {
+    "message": "后台任务已不再接收本次结果，请重新开始提炼。"
+  },
   "resultDeliveryFailed": { "message": "无法投递提炼结果。" },
   "retrySaveCard": { "message": "重新保存" },
   "authorizeAndSave": { "message": "授权并保存" },

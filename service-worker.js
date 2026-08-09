@@ -1,9 +1,7 @@
+import "./prompt-constants.js";
 import "./i18n.js";
 import { getStoredHandle } from "./db-utils.js";
-import {
-  markdownFileExists,
-  saveMarkdownFile,
-} from "./file-utils.js";
+import { markdownFileExists, saveMarkdownFile } from "./file-utils.js";
 import { getConversationId } from "./sites.js";
 
 const { t } = globalThis.ChatDistillerI18n;
@@ -15,10 +13,7 @@ const SAVING_TIMEOUT_MINUTES = 1;
 const STARTING_STATUSES = new Set(["starting"]);
 const GENERATION_STATUSES = new Set(["starting", "generating"]);
 const ACTIVE_STATUSES = new Set(["starting", "generating", "saving"]);
-const BLOCKING_STATUSES = new Set([
-  ...ACTIVE_STATUSES,
-  "awaiting_permission",
-]);
+const BLOCKING_STATUSES = new Set([...ACTIVE_STATUSES, "awaiting_permission"]);
 const EXTENSION_PAGE_MESSAGE_TYPES = new Set([
   "RETRY_TASK_SAVE",
   "START_EXTRACTION_TASK",
@@ -44,60 +39,72 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message?.type === "START_EXTRACTION_TASK") {
     startExtractionTask(message.payload)
       .then(sendResponse)
-      .catch((error) => sendResponse({
-        ok: false,
-        error: normalizeError(error),
-      }));
+      .catch((error) =>
+        sendResponse({
+          ok: false,
+          error: normalizeError(error),
+        }),
+      );
     return true;
   }
 
   if (message?.type === "CANCEL_TASK") {
     cancelTask(message.jobId)
       .then(sendResponse)
-      .catch((error) => sendResponse({
-        ok: false,
-        error: normalizeError(error),
-      }));
+      .catch((error) =>
+        sendResponse({
+          ok: false,
+          error: normalizeError(error),
+        }),
+      );
     return true;
   }
 
   if (message?.type === "EXTRACTION_RESULT") {
     handleExtractionResult(message, sender)
       .then(sendResponse)
-      .catch((error) => sendResponse({
-        ok: false,
-        error: normalizeError(error),
-      }));
+      .catch((error) =>
+        sendResponse({
+          ok: false,
+          error: normalizeError(error),
+        }),
+      );
     return true;
   }
 
   if (message?.type === "RETRY_TASK_SAVE") {
     retryTaskSave(message.jobId)
       .then(sendResponse)
-      .catch((error) => sendResponse({
-        ok: false,
-        error: normalizeError(error),
-      }));
+      .catch((error) =>
+        sendResponse({
+          ok: false,
+          error: normalizeError(error),
+        }),
+      );
     return true;
   }
 
   if (message?.type === "RETRY_TASK_SAVE_FROM_TAB") {
     retryTaskSaveFromTab(message, sender)
       .then(sendResponse)
-      .catch((error) => sendResponse({
-        ok: false,
-        error: normalizeError(error),
-      }));
+      .catch((error) =>
+        sendResponse({
+          ok: false,
+          error: normalizeError(error),
+        }),
+      );
     return true;
   }
 
   if (message?.type === "OPEN_SIDE_PANEL_FROM_TAB") {
     openSidePanelFromTab(message, sender)
       .then(sendResponse)
-      .catch((error) => sendResponse({
-        ok: false,
-        error: normalizeError(error),
-      }));
+      .catch((error) =>
+        sendResponse({
+          ok: false,
+          error: normalizeError(error),
+        }),
+      );
     return true;
   }
 
@@ -158,11 +165,12 @@ async function startExtractionTask(payload) {
     const hasRecordedPrompt = Boolean(savedSession.record?.promptFingerprint);
     const recordedPromptMatches =
       savedSession.record?.promptFingerprint === promptFingerprint;
-    const reusableResult = hasRecordedPrompt && !recordedPromptMatches
-      ? null
-      : await findReusableResult(task, {
-        matchPromptInPage: !recordedPromptMatches,
-      });
+    const reusableResult =
+      hasRecordedPrompt && !recordedPromptMatches
+        ? null
+        : await findReusableResult(task, {
+            matchPromptInPage: !recordedPromptMatches,
+          });
 
     if (reusableResult) {
       await chrome.alarms.create(taskAlarmName(task.jobId), {
@@ -198,10 +206,14 @@ async function startExtractionTask(payload) {
     }
 
     try {
-      const generatingTask = await updateTask(task, {
-        status: "generating",
-        statusMessage: t("generatingBackground"),
-      }, STARTING_STATUSES);
+      const generatingTask = await updateTask(
+        task,
+        {
+          status: "generating",
+          statusMessage: t("generatingBackground"),
+        },
+        STARTING_STATUSES,
+      );
       await notifyTab(generatingTask);
       return { ok: true, task: publicTask(generatingTask) };
     } catch (error) {
@@ -215,11 +227,15 @@ async function startExtractionTask(payload) {
       throw error;
     }
   } catch (error) {
-    const failedTask = await updateTask(task, {
-      status: "error",
-      statusMessage: normalizeError(error),
-      error: normalizeError(error),
-    }, GENERATION_STATUSES).catch(() => null);
+    const failedTask = await updateTask(
+      task,
+      {
+        status: "error",
+        statusMessage: normalizeError(error),
+        error: normalizeError(error),
+      },
+      GENERATION_STATUSES,
+    ).catch(() => null);
     if (failedTask) {
       await clearTaskAlarm(task.jobId);
       await notifyTab(failedTask);
@@ -272,11 +288,15 @@ async function handleExtractionResult(message, sender) {
   }
 
   if (!payload.ok) {
-    const failedTask = await updateTask(task, {
-      status: "error",
-      statusMessage: payload.error || t("extractionFailed"),
-      error: payload.error || t("extractionFailed"),
-    }, GENERATION_STATUSES);
+    const failedTask = await updateTask(
+      task,
+      {
+        status: "error",
+        statusMessage: payload.error || t("extractionFailed"),
+        error: payload.error || t("extractionFailed"),
+      },
+      GENERATION_STATUSES,
+    );
     await clearTaskAlarm(task.jobId);
     await notifyTab(failedTask);
     return { ok: false, task: publicTask(failedTask) };
@@ -287,11 +307,15 @@ async function handleExtractionResult(message, sender) {
     !payload.content.trim() ||
     payload.content.length > 2_000_000
   ) {
-    const failedTask = await updateTask(task, {
-      status: "error",
-      statusMessage: t("invalidMarkdown"),
-      error: t("invalidMarkdown"),
-    }, GENERATION_STATUSES);
+    const failedTask = await updateTask(
+      task,
+      {
+        status: "error",
+        statusMessage: t("invalidMarkdown"),
+        error: t("invalidMarkdown"),
+      },
+      GENERATION_STATUSES,
+    );
     await clearTaskAlarm(task.jobId);
     await notifyTab(failedTask);
     return { ok: false, task: publicTask(failedTask) };
@@ -301,39 +325,93 @@ async function handleExtractionResult(message, sender) {
     delayInMinutes: SAVING_TIMEOUT_MINUTES,
   });
 
-  const savingTask = await updateTask(task, {
-    status: "saving",
-    statusMessage: t("writingResult"),
-    prompt: null,
-    result: {
-      content: payload.content,
-      filename: payload.filename,
-      title: payload.title,
-      sourceUrl: payload.sourceUrl,
-      siteId: payload.siteId,
+  const savingTask = await updateTask(
+    task,
+    {
+      status: "saving",
+      statusMessage: t("writingResult"),
+      prompt: null,
+      result: {
+        content: payload.content,
+        filename: payload.filename,
+        title: payload.title,
+        sourceUrl: payload.sourceUrl,
+        siteId: payload.siteId,
+      },
     },
-  }, GENERATION_STATUSES);
+    GENERATION_STATUSES,
+  );
   await notifyTab(savingTask);
   return saveTaskResult(savingTask);
 }
 
 async function retryTaskSave(jobId) {
   const task = await getActiveTask();
-  if (!task || task.jobId !== jobId || !task.result?.content) {
-    throw new Error(t("noRetryResult"));
+  if (!task || task.jobId !== jobId) {
+    throw new Error(t("staleTaskUpdate"));
   }
 
-  await chrome.alarms.create(taskAlarmName(task.jobId), {
-    delayInMinutes: SAVING_TIMEOUT_MINUTES,
-  });
+  if (task.result?.content) {
+    await chrome.alarms.create(taskAlarmName(task.jobId), {
+      delayInMinutes: SAVING_TIMEOUT_MINUTES,
+    });
 
-  const savingTask = await updateTask(task, {
+    const savingTask = await updateTask(task, {
+      status: "saving",
+      statusMessage: t("retryWriting"),
+      error: null,
+    });
+    await notifyTab(savingTask);
+    return saveTaskResult(savingTask);
+  }
+
+  const updatingTask = await updateTask(task, {
     status: "saving",
-    statusMessage: t("retryWriting"),
+    statusMessage: t("recheckingDom"),
     error: null,
   });
-  await notifyTab(savingTask);
-  return saveTaskResult(savingTask);
+  await notifyTab(updatingTask);
+
+  try {
+    const response = await chrome.tabs.sendMessage(task.tabId, {
+      type: "RETRY_EXTRACTION_FROM_DOM",
+      payload: {
+        jobId: task.jobId,
+      },
+    });
+
+    if (!response?.ok || !response?.result?.content) {
+      throw new Error(response?.error || t("extractionFailed"));
+    }
+
+    await chrome.alarms.create(taskAlarmName(task.jobId), {
+      delayInMinutes: SAVING_TIMEOUT_MINUTES,
+    });
+
+    const savingTask = await updateTask(task, {
+      status: "saving",
+      statusMessage: t("writingResult"),
+      prompt: null,
+      result: {
+        content: response.result.content,
+        filename: response.result.filename,
+        title: response.result.title,
+        sourceUrl: response.result.sourceUrl,
+        siteId: response.result.siteId,
+      },
+    });
+    await notifyTab(savingTask);
+    return saveTaskResult(savingTask);
+  } catch (error) {
+    const failedTask = await updateTask(task, {
+      status: "error",
+      statusMessage: normalizeError(error),
+      error: normalizeError(error),
+    });
+    await clearTaskAlarm(task.jobId);
+    await notifyTab(failedTask);
+    return { ok: false, task: publicTask(failedTask) };
+  }
 }
 
 async function retryTaskSaveFromTab(message, sender) {
@@ -355,11 +433,13 @@ async function configureSidePanel() {
 
 async function getAuthorizedContentTask(jobId, sender) {
   const task = await getActiveTask();
+  const canRetry =
+    Boolean(task?.result?.content) || isRecoverableError(task?.error, task);
   if (
     !task ||
     task.jobId !== jobId ||
     sender.tab?.id !== task.tabId ||
-    !task.result?.content
+    !canRetry
   ) {
     throw new Error(t("unauthorizedSender"));
   }
@@ -385,12 +465,16 @@ async function saveTaskResult(task) {
     }
 
     const rootDisplay = rootHandle.name || "storage";
-    const saved = await saveMarkdownFile(rootHandle, {
-      content: task.result.content,
-      title: task.result.title,
-      filename: task.filename || task.result.filename,
-      relativeDirectory: task.relativeDirectory,
-    }, rootDisplay);
+    const saved = await saveMarkdownFile(
+      rootHandle,
+      {
+        content: task.result.content,
+        title: task.result.title,
+        filename: task.filename || task.result.filename,
+        relativeDirectory: task.relativeDirectory,
+      },
+      rootDisplay,
+    );
 
     const successfulTask = await updateTask(task, {
       status: "success",
@@ -401,16 +485,13 @@ async function saveTaskResult(task) {
       result: null,
       completedAt: Date.now(),
     });
-    await storeSavedSession(
-      task.sessionKey,
-      saved,
-      task.promptFingerprint
-    );
+    await storeSavedSession(task.sessionKey, saved, task.promptFingerprint);
     await clearTaskAlarm(task.jobId);
     await notifyTab(successfulTask);
     return { ok: true, task: publicTask(successfulTask) };
   } catch (error) {
-    const permissionRequired = error?.code === "PERMISSION_REQUIRED" ||
+    const permissionRequired =
+      error?.code === "PERMISSION_REQUIRED" ||
       error?.name === "NotAllowedError";
     const failedTask = await updateTask(task, {
       status: permissionRequired ? "awaiting_permission" : "error",
@@ -425,40 +506,40 @@ async function saveTaskResult(task) {
 
 async function failTaskForTab(tabId, message) {
   const task = await getActiveTask();
-  if (
-    !task ||
-    task.tabId !== tabId ||
-    !GENERATION_STATUSES.has(task.status)
-  ) {
+  if (!task || task.tabId !== tabId || !GENERATION_STATUSES.has(task.status)) {
     return;
   }
 
-  const failedTask = await updateTask(task, {
-    status: "error",
-    statusMessage: message,
-    error: message,
-  }, GENERATION_STATUSES);
+  const failedTask = await updateTask(
+    task,
+    {
+      status: "error",
+      statusMessage: message,
+      error: message,
+    },
+    GENERATION_STATUSES,
+  );
   await clearTaskAlarm(task.jobId);
   await notifyTab(failedTask);
 }
 
 async function failTaskIfCurrent(jobId, message) {
   const task = await getActiveTask();
-  if (
-    !task ||
-    task.jobId !== jobId ||
-    !ACTIVE_STATUSES.has(task.status)
-  ) {
+  if (!task || task.jobId !== jobId || !ACTIVE_STATUSES.has(task.status)) {
     return;
   }
 
   const failureMessage = task.status === "saving" ? t("saveTimeout") : message;
 
-  const failedTask = await updateTask(task, {
-    status: "error",
-    statusMessage: failureMessage,
-    error: failureMessage,
-  }, ACTIVE_STATUSES);
+  const failedTask = await updateTask(
+    task,
+    {
+      status: "error",
+      statusMessage: failureMessage,
+      error: failureMessage,
+    },
+    ACTIVE_STATUSES,
+  );
   await clearTaskAlarm(task.jobId);
   await notifyTab(failedTask);
 }
@@ -534,7 +615,7 @@ async function getSavedSessionState(sessionKey) {
 
   const fileExists = await markdownFileExists(
     rootHandle,
-    record.saved.relativePath
+    record.saved.relativePath,
   );
   return { record, fileExists };
 }
@@ -563,7 +644,10 @@ function getSessionKey(sourceUrl, siteId) {
   // the site from the URL, so the key stays stable even if the caller omits it.
   const resolved = getConversationId(sourceUrl, siteId);
   if (!resolved.siteId) {
-    console.warn("Unrecognized chat site, skipping save deduplication:", sourceUrl);
+    console.warn(
+      "Unrecognized chat site, skipping save deduplication:",
+      sourceUrl,
+    );
     return "";
   }
   return resolved.conversationId
@@ -579,7 +663,7 @@ async function createPromptFingerprint(prompt) {
   const bytes = new TextEncoder().encode(prompt);
   const digest = await crypto.subtle.digest("SHA-256", bytes);
   return Array.from(new Uint8Array(digest), (byte) =>
-    byte.toString(16).padStart(2, "0")
+    byte.toString(16).padStart(2, "0"),
   ).join("");
 }
 
@@ -618,17 +702,47 @@ async function notifyTab(task) {
   }
 }
 
+function isRecoverableError(errorMessage, task) {
+  if (task?.result?.content) {
+    return true;
+  }
+
+  const msg = String(errorMessage || "");
+  if (!msg) {
+    return false;
+  }
+
+  if (
+    msg.includes(t("tabClosed")) ||
+    msg.includes(t("tabNavigated")) ||
+    msg.includes(t("communicationFailed")) ||
+    msg.includes(t("updateInterrupted")) ||
+    msg.includes(t("updateInterruptedError")) ||
+    msg.includes(t("taskCancelled")) ||
+    msg.includes(t("extractionCancelled"))
+  ) {
+    return false;
+  }
+
+  return (
+    msg.includes(t("protocolIncomplete")) ||
+    msg.includes(t("markdownMissing")) ||
+    msg.includes(t("localHandleMissing")) ||
+    msg.includes(t("localPermissionExpired")) ||
+    msg.includes(t("rootPermissionRequired")) ||
+    msg.includes(t("writePermissionRequired")) ||
+    msg.includes(t("readWritePermissionRequired")) ||
+    msg.includes(t("saveTimeout")) ||
+    msg.includes(t("extractionFailed"))
+  );
+}
+
 function publicTask(task) {
-  const {
-    prompt,
-    promptFingerprint,
-    result,
-    sessionKey,
-    ...safeTask
-  } = task;
+  const { prompt, promptFingerprint, result, sessionKey, ...safeTask } = task;
   return {
     ...safeTask,
-    canRetrySave: Boolean(result?.content),
+    canRetrySave:
+      Boolean(result?.content) || isRecoverableError(task.error, task),
   };
 }
 

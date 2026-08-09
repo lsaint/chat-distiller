@@ -1,6 +1,8 @@
 {
   "extName": { "message": "Chat Distiller" },
-  "extDescription": { "message": "Distill conversations from supported AI chat platforms into structured Markdown notes and save them to your local directory." },
+  "extDescription": {
+    "message": "Distill conversations from supported AI chat platforms into structured Markdown notes and save them to your local directory."
+  },
   "settingsTitle": { "message": "Chat Distiller Settings" },
   "checkingRoot": { "message": "Checking root directory…" },
   "rootDirectory": { "message": "Root directory" },
@@ -11,18 +13,28 @@
   "filenamePlaceholder": { "message": "Leave blank to generate automatically" },
   "distillationPrompt": { "message": "Distillation prompt" },
   "resetDefault": { "message": "Reset to default" },
-  "autoDisclosure": { "message": "After you click “Generate and save,” the extension automatically enters and sends the prompt above in the current ChatGPT chat." },
+  "autoDisclosure": {
+    "message": "After you click “Generate and save,” the extension automatically enters and sends the prompt above in the current ChatGPT chat."
+  },
   "generateAndSave": { "message": "Generate and save" },
-  "pageRefreshRequired": { "message": "Chat Distiller was just installed or updated. Refresh this page before using the extension so it can connect to the current conversation correctly." },
+  "pageRefreshRequired": {
+    "message": "Chat Distiller was just installed or updated. Refresh this page before using the extension so it can connect to the current conversation correctly."
+  },
   "refreshPage": { "message": "Refresh page" },
   "back": { "message": "Back" },
   "backArrow": { "message": "← Back" },
   "rootSettings": { "message": "Root directory and subdirectory settings" },
   "rootIntro": { "message": "Choose or change the local root directory." },
-  "standaloneSettingsIntro": { "message": "Choose a local root directory. The extension creates Memory files only in the authorized directory and its subdirectories." },
-  "firstAuthorizationHint": { "message": "Chrome requires local directory access to be authorized here the first time. The authorization is retained, so you normally will not need to set it again." },
+  "standaloneSettingsIntro": {
+    "message": "Choose a local root directory. The extension creates Memory files only in the authorized directory and its subdirectories."
+  },
+  "firstAuthorizationHint": {
+    "message": "Chrome requires local directory access to be authorized here the first time. The authorization is retained, so you normally will not need to set it again."
+  },
   "configureRootFirst": { "message": "Set up a root directory first" },
-  "rootConnectedClosing": { "message": "Root directory connected. Click the extension icon to generate. This panel will close in $1s." },
+  "rootConnectedClosing": {
+    "message": "Root directory connected. Click the extension icon to generate. This panel will close in $1s."
+  },
   "rootPathLabel": { "message": "Authorized root directory" },
   "rootPathPlaceholder": { "message": "No directory selected" },
   "selectRoot": { "message": "Change root directory" },
@@ -32,21 +44,41 @@
   "subdirectoryPlaceholder": { "message": "Example: inbox or notes/chat" },
   "progressTitle": { "message": "Generation and save progress" },
   "tipLabel": { "message": "Tip:" },
-  "backgroundTip": { "message": "The task continues in the background, so you can close this popup." },
+  "backgroundTip": {
+    "message": "The task continues in the background, so you can close this popup."
+  },
   "initializing": { "message": "Initializing…" },
   "promptReset": { "message": "The default prompt has been restored." },
   "unsupportedChat": { "message": "Open a supported AI chat page first." },
-  "noRoot": { "message": "No root directory is configured. Open settings and select one first." },
-  "rootPermissionRequired": { "message": "Root directory read/write access was not granted. Allow access and retry." },
-  "checkingSaved": { "message": "Checking whether the current chat has already been saved…" },
+  "noRoot": {
+    "message": "No root directory is configured. Open settings and select one first."
+  },
+  "rootPermissionRequired": {
+    "message": "Root directory read/write access was not granted. Allow access and retry."
+  },
+  "checkingSaved": {
+    "message": "Checking whether the current chat has already been saved…"
+  },
   "startTaskFailed": { "message": "Unable to start the background task." },
-  "alreadySaved": { "message": "The current chat is already saved locally and will not be saved again: $1" },
+  "alreadySaved": {
+    "message": "The current chat is already saved locally and will not be saved again: $1"
+  },
   "retrySaveFailed": { "message": "Unable to continue saving." },
-  "unsupportedPicker": { "message": "This Chrome version does not support directory selection." },
-  "readWritePermissionRequired": { "message": "Read/write access was not granted." },
-  "requestingPermission": { "message": "Requesting local directory permission…" },
-  "missingHandle": { "message": "The local directory handle is missing. Open settings and select the directory again." },
-  "writePermissionRequired": { "message": "Local directory write access was not granted." },
+  "unsupportedPicker": {
+    "message": "This Chrome version does not support directory selection."
+  },
+  "readWritePermissionRequired": {
+    "message": "Read/write access was not granted."
+  },
+  "requestingPermission": {
+    "message": "Requesting local directory permission…"
+  },
+  "missingHandle": {
+    "message": "The local directory handle is missing. Open settings and select the directory again."
+  },
+  "writePermissionRequired": {
+    "message": "Local directory write access was not granted."
+  },
   "rootConnected": { "message": "Root directory connected: $1" },
   "selectionCancelled": { "message": "Directory selection cancelled." },
   "rootDisconnected": { "message": "Root directory disconnected." },
@@ -59,31 +91,72 @@
   "taskStarting": { "message": "Starting task…" },
   "taskGenerating": { "message": "AI is generating the distilled note…" },
   "taskSaving": { "message": "Writing to the local directory…" },
-  "taskAwaitingPermission": { "message": "Waiting for local directory authorization." },
+  "taskAwaitingPermission": {
+    "message": "Waiting for local directory authorization."
+  },
   "taskSuccess": { "message": "Saved successfully." },
   "taskError": { "message": "Task failed." },
   "taskUnknown": { "message": "Unknown task status." },
-  "pathNeedsAuthorization": { "message": "The directory path has not been authorized. Open settings and select the root directory." },
-  "rootPermissionExpired": { "message": "Permission for root directory $1 has expired. Select it again or refresh authorization." },
-  "communicationFailed": { "message": "Unable to communicate with the AI chat tab. Refresh that page and retry." },
-  "generationTimeout": { "message": "Timed out waiting for the AI response. Please retry." },
-  "tabClosed": { "message": "The AI chat tab was closed and generation stopped." },
-  "tabNavigated": { "message": "The AI chat page was refreshed or navigated away, so generation stopped." },
-  "taskBlocked": { "message": "Another task is running or waiting to save. Finish it first." },
-  "submittingPrompt": { "message": "Submitting the distillation prompt to the AI…" },
-  "reusingResult": { "message": "A matching prompt was found. Saving the existing Memory directly…" },
-  "extractionStartFailed": { "message": "Unable to start the distillation task." },
-  "generatingBackground": { "message": "The AI is generating the distilled note. You can close the popup without interrupting it." },
-  "updateInterrupted": { "message": "The extension was updated. The previous task stopped; return and generate again." },
-  "updateInterruptedError": { "message": "The extension update interrupted the previous generation task." },
+  "pathNeedsAuthorization": {
+    "message": "The directory path has not been authorized. Open settings and select the root directory."
+  },
+  "rootPermissionExpired": {
+    "message": "Permission for root directory $1 has expired. Select it again or refresh authorization."
+  },
+  "communicationFailed": {
+    "message": "Unable to communicate with the AI chat tab. Refresh that page and retry."
+  },
+  "generationTimeout": {
+    "message": "Timed out waiting for the AI response. Please retry."
+  },
+  "tabClosed": {
+    "message": "The AI chat tab was closed and generation stopped."
+  },
+  "tabNavigated": {
+    "message": "The AI chat page was refreshed or navigated away, so generation stopped."
+  },
+  "taskBlocked": {
+    "message": "Another task is running or waiting to save. Finish it first."
+  },
+  "submittingPrompt": {
+    "message": "Submitting the distillation prompt to the AI…"
+  },
+  "reusingResult": {
+    "message": "A matching prompt was found. Saving the existing Memory directly…"
+  },
+  "extractionStartFailed": {
+    "message": "Unable to start the distillation task."
+  },
+  "generatingBackground": {
+    "message": "The AI is generating the distilled note. You can close the popup without interrupting it."
+  },
+  "updateInterrupted": {
+    "message": "The extension was updated. The previous task stopped; return and generate again."
+  },
+  "updateInterruptedError": {
+    "message": "The extension update interrupted the previous generation task."
+  },
   "extractionFailed": { "message": "Unable to extract AI content." },
-  "invalidMarkdown": { "message": "The AI returned empty or oversized Markdown content." },
-  "writingResult": { "message": "Generation complete. Writing to the local directory…" },
-  "noRetryResult": { "message": "There is no generated result available to save." },
+  "invalidMarkdown": {
+    "message": "The AI returned empty or oversized Markdown content."
+  },
+  "writingResult": {
+    "message": "Generation complete. Writing to the local directory…"
+  },
+  "noRetryResult": {
+    "message": "There is no generated result available to save."
+  },
   "retryWriting": { "message": "Writing to the local directory again…" },
-  "localHandleMissing": { "message": "The local storage directory handle is missing. Select the directory again." },
-  "localPermissionExpired": { "message": "Local directory permission has expired. Open the extension and authorize it to continue saving." },
-  "savedReused": { "message": "Saved existing Memory without sending another prompt: $1" },
+  "recheckingDom": { "message": "Reading page content again…" },
+  "localHandleMissing": {
+    "message": "The local storage directory handle is missing. Select the directory again."
+  },
+  "localPermissionExpired": {
+    "message": "Local directory permission has expired. Open the extension and authorize it to continue saving."
+  },
+  "savedReused": {
+    "message": "Saved existing Memory without sending another prompt: $1"
+  },
   "savedPath": { "message": "Saved successfully: $1" },
   "invalidTask": { "message": "Invalid generation task parameters." },
   "invalidResult": { "message": "Invalid generated result." },
@@ -95,27 +168,57 @@
   "collapseContent": { "message": "Collapse content" },
   "expandContent": { "message": "Expand content" },
   "savingLocal": { "message": "Generation complete. Saving locally…" },
-  "automaticSubmissionFailed": { "message": "$1 Automatic prompt submission failed. Please retry." },
+  "automaticSubmissionFailed": {
+    "message": "$1 Automatic prompt submission failed. Please retry."
+  },
   "emptyAiResponse": { "message": "The AI returned an empty response." },
-  "insertPromptFailed": { "message": "Unable to insert text into the prompt box." },
+  "insertPromptFailed": {
+    "message": "Unable to insert text into the prompt box."
+  },
   "sendButtonDisabled": { "message": "The send button is disabled." },
-  "promptNotAccepted": { "message": "The prompt was not accepted by the editor." },
-  "requiredElementMissing": { "message": "The required page element was not found." },
-  "protocolIncomplete": { "message": "The AI finished responding, but the Memory protocol is incomplete. The English filename or end marker is missing, so nothing was saved." },
-  "markdownMissing": { "message": "The AI finished responding without a savable Markdown code block. Reset the default prompt and retry." },
-  "contentCollapsed": { "message": "The Memory prompt and response are collapsed. Expand them to view the content." },
-  "responseStartTimeout": { "message": "Timed out waiting for the AI to start responding." },
-  "responseTimeoutDetails": { "message": "Timed out waiting for the AI response to finish. Extracted length: $1; raw length: $2; message connected: $3." },
-  "unauthorizedSender": { "message": "This action is not allowed from a web page." },
+  "promptNotAccepted": {
+    "message": "The prompt was not accepted by the editor."
+  },
+  "requiredElementMissing": {
+    "message": "The required page element was not found."
+  },
+  "protocolIncomplete": {
+    "message": "The AI finished responding, but the Memory protocol is incomplete. The English filename or end marker is missing, so nothing was saved."
+  },
+  "markdownMissing": {
+    "message": "The AI finished responding without a savable Markdown code block. Reset the default prompt and retry."
+  },
+  "contentCollapsed": {
+    "message": "The Memory prompt and response are collapsed. Expand them to view the content."
+  },
+  "responseStartTimeout": {
+    "message": "Timed out waiting for the AI to start responding."
+  },
+  "responseTimeoutDetails": {
+    "message": "Timed out waiting for the AI response to finish. Extracted length: $1; raw length: $2; message connected: $3."
+  },
+  "unauthorizedSender": {
+    "message": "This action is not allowed from a web page."
+  },
   "staleTaskUpdate": { "message": "The task is no longer active." },
-  "extractionAlreadyRunning": { "message": "An extraction is already running on this page." },
-  "extractionCancelled": { "message": "The extraction was cancelled because the background task ended." },
-  "resultIgnored": { "message": "The background task no longer accepts this result. Start a new extraction." },
-  "resultDeliveryFailed": { "message": "Unable to deliver the extraction result." },
+  "extractionAlreadyRunning": {
+    "message": "An extraction is already running on this page."
+  },
+  "extractionCancelled": {
+    "message": "The extraction was cancelled because the background task ended."
+  },
+  "resultIgnored": {
+    "message": "The background task no longer accepts this result. Start a new extraction."
+  },
+  "resultDeliveryFailed": {
+    "message": "Unable to deliver the extraction result."
+  },
   "retrySaveCard": { "message": "Save again" },
   "authorizeAndSave": { "message": "Authorize and save" },
   "openSettingsFailed": { "message": "Unable to open the side panel." },
   "cancelTask": { "message": "Cancel task" },
   "taskCancelled": { "message": "Task cancelled." },
-  "saveTimeout": { "message": "Timed out saving to local directory. Please retry." }
+  "saveTimeout": {
+    "message": "Timed out saving to local directory. Please retry."
+  }
 }

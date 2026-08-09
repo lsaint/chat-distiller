@@ -17,7 +17,8 @@
 ![Manifest V3](https://img.shields.io/badge/Manifest-V3-34A853)
 ![Languages: English | 简体中文](https://img.shields.io/badge/languages-English%20%7C%20简体中文-blue.svg)
 
-[Download Extension](https://github.com/lsaint/chat-distiller/releases/latest) ·
+[Install from Chrome Web Store](https://chromewebstore.google.com/detail/chat-distiller/jmnnlhpgihkbffhlkhemmbldajnfoalm) ·
+[GitHub Releases](https://github.com/lsaint/chat-distiller/releases/latest) ·
 [简体中文](README.zh-CN.md) · [Privacy Policy](PRIVACY.md) ·
 [Aikito](https://github.com/lsaint/aikito)
 
@@ -59,11 +60,11 @@ Additional AI chat sites can be added through the Site Adapter interface.
 
 ## Installation
 
-### Chrome Web Store
+### Option 1: Chrome Web Store (Recommended)
 
-Chrome Web Store release pending review.
+[Install Chat Distiller from the Chrome Web Store](https://chromewebstore.google.com/detail/chat-distiller/jmnnlhpgihkbffhlkhemmbldajnfoalm).
 
-### Install from GitHub Release
+### Option 2: Install from GitHub Release
 
 1. Open the [latest GitHub Release](https://github.com/lsaint/chat-distiller/releases/latest).
 2. Under **Assets**, download `chat-distiller-*.zip`. Do not download the automatically generated **Source code** archives.
@@ -74,7 +75,7 @@ Chrome Web Store release pending review.
 
 Each GitHub Release also provides a `.sha256` file for verifying the extension archive. The release ZIP contains the same runtime files as the corresponding Chrome Web Store submission package.
 
-### Install from Source
+### Option 3: Install from Source
 
 1. Clone this repository.
 2. Open `chrome://extensions` in Chrome and enable **Developer mode**.

@@ -17,7 +17,8 @@
 ![Manifest V3](https://img.shields.io/badge/Manifest-V3-34A853)
 ![Languages: English | 简体中文](https://img.shields.io/badge/languages-English%20%7C%20简体中文-blue.svg)
 
-[下载扩展](https://github.com/lsaint/chat-distiller/releases/latest) ·
+[从 Chrome 应用商店安装](https://chromewebstore.google.com/detail/chat-distiller/jmnnlhpgihkbffhlkhemmbldajnfoalm) ·
+[GitHub Releases](https://github.com/lsaint/chat-distiller/releases/latest) ·
 [English](README.md) · [隐私政策](PRIVACY.md) ·
 [Aikito](https://github.com/lsaint/aikito)
 
@@ -59,11 +60,11 @@ Chat Distiller 会记录对话与文件的关联状态，防止重复保存，�
 
 ## 安装
 
-### Chrome Web Store
+### 选项 1：Chrome 应用商店（推荐）
 
-Chrome Web Store 版本正在等待审核。
+[从 Chrome 应用商店安装 Chat Distiller](https://chromewebstore.google.com/detail/chat-distiller/jmnnlhpgihkbffhlkhemmbldajnfoalm)。
 
-### 从 GitHub Release 安装
+### 选项 2：从 GitHub Release 安装
 
 1. 打开[最新 GitHub Release](https://github.com/lsaint/chat-distiller/releases/latest)。
 2. 在 **Assets** 区域下载 `chat-distiller-*.zip`。不要下载 GitHub 自动生成的 **Source code** 源码压缩包。
@@ -74,7 +75,7 @@ Chrome Web Store 版本正在等待审核。
 
 每个 GitHub Release 还会提供用于校验扩展压缩包的 `.sha256` 文件。Release ZIP 与对应的 Chrome Web Store 送审包包含相同的运行时文件。
 
-### 从源码安装
+### 选项 3：从源码安装
 
 1. 克隆本仓库。
 2. 在 Chrome 中打开 `chrome://extensions`，并开启“开发者模式”。

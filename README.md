@@ -154,6 +154,6 @@ Issues and pull requests are welcome.
 
 When adding a new site adapter, keep permissions limited to the narrowest supported HTTPS origin and avoid duplicating shared protocol or state-machine logic in site-specific code.
 
-## License
+## Support
 
-Chat Distiller is licensed under the [MIT License](LICENSE).
+If you find Chat Distiller useful, you can [support its development](https://lsaint.github.io/donation/).

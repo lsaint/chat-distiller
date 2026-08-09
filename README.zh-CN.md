@@ -154,6 +154,6 @@ Content 层采用 **Site Adapter** 架构。共享协议、状态机、DOM 工�
 
 新增站点适配器时，请把权限限制在所需的最小 HTTPS 来源范围内，并避免在站点专属代码中重复实现共享协议或状态机逻辑。
 
-## 许可证
+## 支持
 
-Chat Distiller 使用 [MIT License](LICENSE)。
+如果你觉得 Chat Distiller 对你有帮助，可以[支持它的开发](https://lsaint.github.io/donation/)。

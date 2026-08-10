@@ -156,4 +156,4 @@ Content 层采用 **Site Adapter** 架构。共享协议、状态机、DOM 工�
 
 ## 支持
 
-如果你觉得 Chat Distiller 对你有帮助，可以[支持它的开发](https://lsaint.github.io/donation/)。
+如果你觉得 Chat Distiller 对你有帮助，可以[支持它的开发](https://lsaint.github.io/donation/?utm_source=github&utm_medium=readme&utm_campaign=chat-distiller)。

@@ -156,4 +156,4 @@ When adding a new site adapter, keep permissions limited to the narrowest suppor
 
 ## Support
 
-If you find Chat Distiller useful, you can [support its development](https://lsaint.github.io/donation/).
+If you find Chat Distiller useful, you can [support its development](https://lsaint.github.io/donation/?utm_source=github&utm_medium=readme&utm_campaign=chat-distiller).

@@ -51,6 +51,12 @@
     root.querySelectorAll("[data-i18n-placeholder]").forEach((element) => {
       element.placeholder = t(element.dataset.i18nPlaceholder);
     });
+    root.querySelectorAll("[data-i18n-title]").forEach((element) => {
+      element.title = t(element.dataset.i18nTitle);
+    });
+    root.querySelectorAll("[data-i18n-aria-label]").forEach((element) => {
+      element.setAttribute("aria-label", t(element.dataset.i18nAriaLabel));
+    });
   }
 
   function getDefaultPrompt(locale = getLocale()) {

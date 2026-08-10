@@ -1,4 +1,4 @@
-import { getStoredHandle } from "./db-utils.js";
+import { getStoredHandle, getReadWritePermission } from "./db-utils.js";
 import {
   checkPageReady,
   getActiveTab,
@@ -17,6 +17,8 @@ const CURRENT_PROMPT_VERSION = 8;
 const DEFAULT_PROMPT = getDefaultPrompt();
 
 const ACTIVE_TASK_KEY = "activeExtractionTask";
+const GITHUB_URL = "https://github.com/lsaint/chat-distiller";
+const SUPPORT_URL = "https://lsaint.github.io/donation/?utm_source=chat-distiller&utm_medium=extension&utm_campaign=support";
 const ACTIVE_TASK_STATUSES = new Set(["starting", "generating", "saving"]);
 const ACTIONABLE_TASK_STATUSES = new Set([
   ...ACTIVE_TASK_STATUSES,
@@ -31,8 +33,10 @@ const directoryStatus = document.querySelector("#directory-status");
 const statusElement = document.querySelector("#status");
 const generateButton = document.querySelector("#generate");
 const generateAction = generateButton.closest(".actions");
-const inlineSettingsButton = document.querySelector("#inline-settings");
 const resetPromptButton = document.querySelector("#reset-prompt");
+const openSettingsButton = document.querySelector("#open-settings");
+const openGithubButton = document.querySelector("#open-github");
+const openSupportButton = document.querySelector("#open-support");
 const promptInput = document.querySelector("#prompt");
 const filenameInput = document.querySelector("#filename");
 const relativeDirectoryInput = document.querySelector("#relative-directory");
@@ -69,6 +73,10 @@ resetPromptButton?.addEventListener("click", async () => {
   });
   setStatus(t("promptReset"), "success");
 });
+
+openSettingsButton?.addEventListener("click", openSettingsFromPopup);
+openGithubButton?.addEventListener("click", () => openExternalPage(GITHUB_URL));
+openSupportButton?.addEventListener("click", () => openExternalPage(SUPPORT_URL));
 
 generateButton.addEventListener("click", async () => {
   try {
@@ -164,7 +172,6 @@ refreshPageButton?.addEventListener("click", async () => {
   }
 });
 
-inlineSettingsButton?.addEventListener("click", openSettingsFromPopup);
 directoryStatus?.addEventListener("click", openSettingsFromPopup);
 directoryStatus?.addEventListener("keydown", (event) => {
   if (event.key === "Enter" || event.key === " ") {
@@ -382,20 +389,17 @@ async function checkDirectoryStatus() {
       (stored.selectedDirectoryName ? `~/${stored.selectedDirectoryName}` : "");
     const handle = await getStoredHandle();
     displayPath ||= handle?.name || "";
-    if (displayPath && handle) {
+    const permission = await getReadWritePermission(handle);
+    if (permission === "granted") {
       directoryStatus.value = displayPath;
       directoryStatus.className = "success";
       setGenerateAvailability(true);
-      inlineSettingsButton.style.display = "inline-block";
-      inlineSettingsButton.textContent = t("changeSettings");
     } else {
       directoryStatus.value = displayPath
         ? t("pathNeedsAuthorization")
-        : t("rootNotSet");
+        : t("unauthorizedClickToSet");
       directoryStatus.className = "error";
       setGenerateAvailability(false);
-      inlineSettingsButton.style.display = "inline-block";
-      inlineSettingsButton.textContent = t("openSettings");
     }
   } catch {
     directoryStatus.value = "";
@@ -416,6 +420,15 @@ function setGenerateAvailability(available) {
 async function openSettingsFromPopup() {
   try {
     await openSidePanel();
+    window.close();
+  } catch (error) {
+    setStatus(normalizeError(error), "error");
+  }
+}
+
+async function openExternalPage(url) {
+  try {
+    await chrome.tabs.create({ url });
     window.close();
   } catch (error) {
     setStatus(normalizeError(error), "error");

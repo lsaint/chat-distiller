@@ -65,6 +65,14 @@ export async function deleteStoredHandle() {
   });
 }
 
+export async function getReadWritePermission(handle) {
+  if (!handle) {
+    return "denied";
+  }
+
+  return handle.queryPermission({ mode: "readwrite" });
+}
+
 export async function ensureReadWritePermission(handle) {
   const current = await handle.queryPermission({
     mode: "readwrite",

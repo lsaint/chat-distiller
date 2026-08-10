@@ -1,6 +1,7 @@
 import {
   deleteStoredHandle,
   ensureReadWritePermission,
+  getReadWritePermission,
   getStoredHandle,
   storeHandle,
 } from "./db-utils.js";
@@ -17,6 +18,14 @@ let closeCountdownTimer = null;
 
 localizeDocument();
 initialize().catch((error) => setStatus(normalizeError(error), "error"));
+
+rootDirectoryInput.addEventListener("click", () => selectButton.click());
+rootDirectoryInput.addEventListener("keydown", (event) => {
+  if (event.key === "Enter" || event.key === " ") {
+    event.preventDefault();
+    selectButton.click();
+  }
+});
 
 selectButton.addEventListener("click", async () => {
   cancelSidePanelClose();
@@ -43,6 +52,7 @@ selectButton.addEventListener("click", async () => {
       selectedDirectoryPath: handle.name,
     });
     rootDirectoryInput.value = handle.name;
+    rootDirectoryInput.className = "success";
     setStatus(t("rootConnected", handle.name), "success");
     await retryPendingTaskSave();
     scheduleSidePanelClose();
@@ -63,6 +73,7 @@ disconnectButton.addEventListener("click", async () => {
       "selectedDirectoryPath",
     ]);
     rootDirectoryInput.value = "";
+    rootDirectoryInput.className = "";
     setStatus(t("rootDisconnected"), "muted");
   } catch (error) {
     setStatus(normalizeError(error), "error");
@@ -87,7 +98,8 @@ async function initialize() {
     setStatus(displayPath ? t("pathNeedsAuthorization") : t("rootNotSet"), displayPath ? "error" : "muted");
     return;
   }
-  const permission = await handle.queryPermission({ mode: "readwrite" });
+  const permission = await getReadWritePermission(handle);
+  if (permission === "granted") rootDirectoryInput.className = "success";
   setStatus(
     permission === "granted"
       ? t("rootConnected", displayPath)

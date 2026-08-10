@@ -11,6 +11,8 @@
     label { display: block; margin: 14px 0 6px; font-size: 13px; font-weight: 600; }
     input { width: 100%; box-sizing: border-box; border: 1px solid #c7c7c7; border-radius: 8px; padding: 9px 10px; font: inherit; }
     input[readonly] { background: #f8f9fa; }
+    #root-directory { cursor: pointer; }
+    #root-directory.success { color: #137333; }
     .actions { display: flex; gap: 8px; margin-top: 12px; }
     button { border: 0; border-radius: 8px; padding: 9px 12px; cursor: pointer; font: inherit; }
     #select-directory { flex: 1; color: #fff; background: #1a73e8; }
@@ -27,7 +29,7 @@
   <p class="muted" data-i18n="firstAuthorizationHint">Chrome requires local directory access to be authorized here the first time. The authorization is retained, so you normally will not need to set it again.</p>
 
   <label for="root-directory" data-i18n="rootPathLabel">Authorized root directory</label>
-  <input id="root-directory" placeholder="No directory selected" data-i18n-placeholder="rootPathPlaceholder" readonly>
+  <input id="root-directory" placeholder="No directory selected" data-i18n-placeholder="rootPathPlaceholder" readonly tabindex="0">
 
   <div class="actions">
     <button id="select-directory" type="button" data-i18n="chooseRoot">Select root directory</button>

@@ -34,10 +34,10 @@ There is no developer-controlled backend, analytics service, or cloud storage. I
 
 General-purpose exporters capture full transcripts, but long AI conversations often bury key decisions under exploration and temporary context. Chat Distiller asks the AI to distill the conversation into a concise Markdown note—containing only reusable decisions, constraints, insights, and action items—and saves it directly to your local workspace. See [Why Chat Distiller](docs/why-chat-distiller.md) for the full background.
 
-| Raw Conversation (Before) | Concise Memory Note (After) |
-| --- | --- |
-| **Noisy & Verbose**: Full transcript containing exploration, trial-and-error, repetition, and temporary debugging context. | **Clean & Reusable**: Structured Markdown note written directly to your authorized local folder. |
-| **High Overhead**: Hard to review manually and wastes context tokens when fed back to Coding Agents. | **High Signal**: Contains only **Decisions & Rationale**, **Architectural Constraints**, **Rejected Alternatives**, and **Follow-up Actions**. |
+| Raw Conversation (Before)                                                                                                  | Concise Memory Note (After)                                                                                                                    |
+| -------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Noisy & Verbose**: Full transcript containing exploration, trial-and-error, repetition, and temporary debugging context. | **Clean & Reusable**: Structured Markdown note written directly to your authorized local folder.                                               |
+| **High Overhead**: Hard to review manually and wastes context tokens when fed back to Coding Agents.                       | **High Signal**: Contains only **Decisions & Rationale**, **Architectural Constraints**, **Rejected Alternatives**, and **Follow-up Actions**. |
 
 ## How It Works
 
@@ -55,6 +55,7 @@ Chat Distiller records saved conversation metadata to prevent duplicate saves an
 ## Supported Sites
 
 - ChatGPT
+- DeepSeek
 
 Additional AI chat sites can be added through the Site Adapter interface.
 
@@ -122,16 +123,6 @@ The extension supports English and Simplified Chinese. Chrome locales matching `
 Manifest text, popup and side-panel UI, status cards, and runtime messages use Chrome i18n resources.
 
 The default distillation prompt follows the interface language. Once edited, a custom prompt is preserved across extension upgrades and language changes until the user selects **Reset to default**.
-
-## Known Limitations
-
-- AI chat pages do not expose a stable extension API. Site DOM changes can temporarily break selectors for messages, editors, or send controls.
-- Very long generations can exceed the task timeout.
-- Clearing extension data, uninstalling the extension, moving the selected directory, or changing system permissions can require directory reauthorization.
-- A response missing the required filename or completion marker is intentionally rejected as incomplete.
-- ChatGPT is currently the only bundled site adapter.
-
-See [Troubleshooting](docs/troubleshooting.md) for recovery steps and common failure modes.
 
 ## Architecture
 

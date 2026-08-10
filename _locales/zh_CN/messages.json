@@ -1,7 +1,7 @@
 {
   "extName": { "message": "Chat Distiller" },
   "extDescription": {
-    "message": "点击生成后，扩展会在当前 ChatGPT 对话中自动填写并发送提炼提示词，再将生成的 Markdown 保存到用户选择的本地目录。"
+    "message": "点击生成后，扩展会在当前 AI 对话中自动填写并发送提炼提示词，再将生成的 Markdown 保存到用户选择的本地目录。"
   },
   "settingsTitle": { "message": "Chat Distiller 设置" },
   "checkingRoot": { "message": "正在检查根目录…" },
@@ -16,7 +16,7 @@
   "distillationPrompt": { "message": "整理提示词" },
   "resetDefault": { "message": "重置默认" },
   "autoDisclosure": {
-    "message": "点击“生成并保存”后，扩展会在当前 ChatGPT 对话框中自动填写并发送上述提示词。"
+    "message": "点击“生成并保存”后，扩展会在当前 AI 对话框中自动填写并发送上述提示词。"
   },
   "generateAndSave": { "message": "生成并保存" },
   "pageRefreshRequired": {

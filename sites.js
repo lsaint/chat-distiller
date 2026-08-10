@@ -16,6 +16,12 @@ export const SUPPORTED_SITES = [
     origins: ["https://chatgpt.com/", "https://chat.openai.com/"],
     conversationIdPattern: /\/c\/([^/]+)/,
   },
+  {
+    siteId: "deepseek",
+    displayName: "DeepSeek",
+    origins: ["https://chat.deepseek.com/"],
+    conversationIdPattern: /\/a\/chat\/s\/([^/]+)/,
+  },
 ];
 
 export function getSiteForUrl(url) {
@@ -24,7 +30,7 @@ export function getSiteForUrl(url) {
   }
   return (
     SUPPORTED_SITES.find((site) =>
-      site.origins.some((origin) => url.startsWith(origin))
+      site.origins.some((origin) => url.startsWith(origin)),
     ) || null
   );
 }

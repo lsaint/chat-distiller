@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "__MSG_extName__",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "minimum_chrome_version": "116",
   "description": "__MSG_extDescription__",
   "default_locale": "en",
@@ -12,7 +12,11 @@
     "128": "icons/icon-128.png"
   },
   "permissions": ["storage", "alarms", "sidePanel"],
-  "host_permissions": ["https://chatgpt.com/*", "https://chat.openai.com/*"],
+  "host_permissions": [
+    "https://chatgpt.com/*",
+    "https://chat.openai.com/*",
+    "https://chat.deepseek.com/*"
+  ],
   "background": {
     "service_worker": "service-worker.js",
     "type": "module"
@@ -39,7 +43,25 @@
         "src/core/protocol.js",
         "src/core/dom-utils.js",
         "src/core/card-ui.js",
+        "src/core/editor.js",
+        "src/core/adapter-registry.js",
         "src/site/chatgpt.js",
+        "src/core/engine.js",
+        "src/content-entry.js"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://chat.deepseek.com/*"],
+      "js": [
+        "prompt-constants.js",
+        "i18n.js",
+        "src/core/protocol.js",
+        "src/core/dom-utils.js",
+        "src/core/card-ui.js",
+        "src/core/editor.js",
+        "src/core/adapter-registry.js",
+        "src/site/deepseek.js",
         "src/core/engine.js",
         "src/content-entry.js"
       ],

@@ -7,7 +7,7 @@ site names messages, editors, send buttons, or generation controls.
 ## Add a Site
 
 1. Create `src/site/<siteId>.js` and wrap its declarations in an IIFE.
-2. Implement the same adapter interface registered by `src/site/chatgpt.js`.
+2. Implement the adapter interface registered by `src/site/chatgpt.js` or `src/site/deepseek.js`.
 3. Register the adapter with `ChatDistiller.registerAdapter()`.
 4. Add the site's metadata to `SUPPORTED_SITES` in `sites.js`.
 5. Add a dedicated `content_scripts` entry and the narrowest HTTPS host
@@ -19,10 +19,10 @@ site names messages, editors, send buttons, or generation controls.
 
 ## Interface Boundary
 
-Use `src/site/chatgpt.js` as the executable reference for the current adapter
-interface. Registration keys must exactly match what `engine.js` consumes. Do
-not add speculative hooks: an unused interface creates a false extension point
-and makes later changes harder to reason about.
+Use `src/site/chatgpt.js` or `src/site/deepseek.js` as an executable reference for
+the current adapter interface. Registration keys must exactly match what `engine.js`
+consumes. Do not add speculative hooks: an unused interface creates a false extension
+point and makes later changes harder to reason about.
 
 The adapter owns:
 
@@ -31,10 +31,16 @@ The adapter owns:
 - triggering a user-visible send action;
 - detecting visible stop or interrupt controls;
 - identifying response-level final actions;
+- recognizing a known site-specific protocol deviation when recovery is safe;
 - mapping distillation turns to the compact status card.
 
 The adapter does not own protocol validation, task persistence, local file
 writes, retry policy, or shared card state transitions.
+
+`isRecoverableProtocolContent(content)` is optional and defaults to `false`.
+Implement it only for a verified site behavior. It validates the site's
+recoverable content shape; the engine remains responsible for requiring stopped
+generation, final response actions, and a stable-content window before saving.
 
 ## Site Metadata
 

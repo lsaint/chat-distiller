@@ -6,19 +6,15 @@ import {
 } from "./extraction-client.js";
 import { isSupportedChatUrl } from "./sites.js";
 
-const {
-  getDefaultPrompt,
-  getLocale,
-  isDefaultPrompt,
-  localizeDocument,
-  t,
-} = globalThis.ChatDistillerI18n;
+const { getDefaultPrompt, getLocale, isDefaultPrompt, localizeDocument, t } =
+  globalThis.ChatDistillerI18n;
 const CURRENT_PROMPT_VERSION = 8;
 const DEFAULT_PROMPT = getDefaultPrompt();
 
 const ACTIVE_TASK_KEY = "activeExtractionTask";
 const GITHUB_URL = "https://github.com/lsaint/chat-distiller";
-const SUPPORT_URL = "https://lsaint.github.io/donation/?utm_source=chat-distiller&utm_medium=extension&utm_campaign=support";
+const SUPPORT_URL =
+  "https://lsaint.github.io/donation/?utm_source=chat-distiller&utm_medium=extension&utm_campaign=support";
 const ACTIVE_TASK_STATUSES = new Set(["starting", "generating", "saving"]);
 const ACTIONABLE_TASK_STATUSES = new Set([
   ...ACTIVE_TASK_STATUSES,
@@ -76,7 +72,9 @@ resetPromptButton?.addEventListener("click", async () => {
 
 openSettingsButton?.addEventListener("click", openSettingsFromPopup);
 openGithubButton?.addEventListener("click", () => openExternalPage(GITHUB_URL));
-openSupportButton?.addEventListener("click", () => openExternalPage(SUPPORT_URL));
+openSupportButton?.addEventListener("click", () =>
+  openExternalPage(SUPPORT_URL),
+);
 
 generateButton.addEventListener("click", async () => {
   try {
@@ -136,10 +134,7 @@ generateButton.addEventListener("click", async () => {
       throw new Error(response?.error || t("startTaskFailed"));
     }
     if (response.alreadySaved) {
-      setStatus(
-        t("alreadySaved", response.saved.fullPath),
-        "success"
-      );
+      setStatus(t("alreadySaved", response.saved.fullPath), "success");
       return;
     }
 
@@ -242,6 +237,12 @@ relativeDirectoryInput?.addEventListener("input", (event) => {
   chrome.storage.local.set({ relativeDirectory: value }).catch(() => {});
 });
 
+promptInput?.addEventListener("input", () => {
+  if (statusElement.className === "success") {
+    setStatus("", "");
+  }
+});
+
 async function initialize() {
   const stored = await chrome.storage.local.get([
     "prompt",
@@ -290,6 +291,25 @@ async function initialize() {
       showRefreshView();
       return;
     }
+
+    try {
+      const currentPrompt = promptInput.value.trim() || DEFAULT_PROMPT;
+      const reusableResponse = await chrome.tabs.sendMessage(tab.id, {
+        type: "FIND_REUSABLE_EXTRACTION",
+        payload: {
+          prompt: currentPrompt,
+          matchPromptInPage: true,
+        },
+      });
+      if (reusableResponse?.alreadySaved && reusableResponse?.saved?.fullPath) {
+        setStatus(
+          t("alreadySaved", reusableResponse.saved.fullPath),
+          "success",
+        );
+      }
+    } catch {
+      // Ignore if page check message fails
+    }
   }
 
   if (shouldOpenTaskView(currentTask)) {
@@ -303,10 +323,8 @@ async function initialize() {
 function shouldOpenTaskView(task) {
   return Boolean(
     task &&
-    (
-      ACTIONABLE_TASK_STATUSES.has(task.status) ||
-      (task.status === "error" && task.canRetrySave)
-    )
+    (ACTIONABLE_TASK_STATUSES.has(task.status) ||
+      (task.status === "error" && task.canRetrySave)),
   );
 }
 
@@ -320,17 +338,22 @@ function renderTask(task) {
     return;
   }
 
-  const className = task.status === "success"
-    ? "success"
-    : task.status === "error"
-      ? "error"
-      : "muted";
-  setSavingStatus(task.statusMessage || taskStatusLabel(task.status), className);
+  const className =
+    task.status === "success"
+      ? "success"
+      : task.status === "error"
+        ? "error"
+        : "muted";
+  setSavingStatus(
+    task.statusMessage || taskStatusLabel(task.status),
+    className,
+  );
 
   if (cancelTaskButton) {
     const canCancel = Boolean(
       task &&
-      (ACTIVE_TASK_STATUSES.has(task.status) || task.status === "awaiting_permission")
+      (ACTIVE_TASK_STATUSES.has(task.status) ||
+        task.status === "awaiting_permission"),
     );
     cancelTaskButton.style.display = canCancel ? "inline-block" : "none";
   }
@@ -385,7 +408,8 @@ async function checkDirectoryStatus() {
       "selectedDirectoryName",
       "selectedDirectoryPath",
     ]);
-    let displayPath = stored.selectedDirectoryPath ||
+    let displayPath =
+      stored.selectedDirectoryPath ||
       (stored.selectedDirectoryName ? `~/${stored.selectedDirectoryName}` : "");
     const handle = await getStoredHandle();
     displayPath ||= handle?.name || "";

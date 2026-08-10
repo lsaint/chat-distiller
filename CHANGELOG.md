@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-08-10
+
+### Added
+
+- Add DeepSeek site adapter support (`https://chat.deepseek.com/*`) with dedicated DOM selectors and prompt interaction handling.
+- Introduce an explicit site adapter registry and modularize core extraction, protocol validation, and card UI logic.
+
+### Changed
+
+- Move task recovery and retry policy into site adapters for platform-specific response handling.
+- Refine wikilink generation guidance in default distillation prompts.
+
 ## [1.2.0] - 2026-08-10
 
 ### Added
@@ -78,7 +90,8 @@ All notable changes to this project will be documented in this file.
 - Distribute the same deterministic extension ZIP through the Chrome Web Store
   submission process and GitHub Releases.
 
-[Unreleased]: https://github.com/lsaint/chat-distiller/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/lsaint/chat-distiller/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/lsaint/chat-distiller/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/lsaint/chat-distiller/compare/v1.1.2...v1.2.0
 [1.1.2]: https://github.com/lsaint/chat-distiller/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/lsaint/chat-distiller/compare/v1.1.0...v1.1.1

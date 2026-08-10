@@ -20,9 +20,12 @@ chat-distiller/
     │   ├── protocol.js            # Output parsing and integrity checks
     │   ├── dom-utils.js           # Shared DOM primitives
     │   ├── card-ui.js             # In-conversation task card
+    │   ├── editor.js              # Shared prompt editor and content utilities
+    │   ├── adapter-registry.js    # Adapter registration and shared defaults
     │   └── engine.js              # Generation, extraction, and delivery
     ├── site/
-    │   └── chatgpt.js             # ChatGPT-specific DOM adapter
+    │   ├── chatgpt.js             # ChatGPT-specific DOM adapter
+    │   └── deepseek.js            # DeepSeek-specific DOM adapter
     └── content-entry.js           # Adapter validation and engine startup
 ```
 
@@ -46,6 +49,11 @@ Shared core code must not read site-specific selectors or message structures.
 Those assumptions belong in `src/site/<siteId>.js`. Site metadata needed by the
 popup or service worker belongs in `sites.js`, because module service workers
 cannot import a classic content script.
+
+The engine owns protocol timing and state transitions. A site adapter may opt
+into recovery for a known rendering or model-output deviation through
+`isRecoverableProtocolContent(content)`, but the core still decides when the
+response is final and stable enough to use that recovery.
 
 ## Task Lifecycle
 
@@ -74,7 +82,8 @@ three-backtick code blocks inside the note.
 
 The extractor rejects missing markers, incomplete responses, and content still
 being generated. It never saves a partial response merely because the visible
-text stopped changing briefly.
+text stopped changing briefly. Site-specific recovery is disabled by default
+and requires both an explicit adapter hook and the core finality checks.
 
 ## Duplicate and Recovery Behavior
 

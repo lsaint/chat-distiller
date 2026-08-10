@@ -136,11 +136,44 @@ async function startExtractionTask(payload) {
   const sessionKey = getSessionKey(payload.sourceUrl, payload.siteId);
   const promptFingerprint = await createPromptFingerprint(payload.prompt);
   const savedSession = await getSavedSessionState(sessionKey);
-  if (savedSession.fileExists) {
+  if (
+    savedSession.fileExists &&
+    savedSession.record?.promptFingerprint === promptFingerprint
+  ) {
     return {
       ok: true,
       alreadySaved: true,
       saved: savedSession.record.saved,
+    };
+  }
+
+  const hasRecordedPrompt = Boolean(savedSession.record?.promptFingerprint);
+  const recordedPromptMatches =
+    savedSession.record?.promptFingerprint === promptFingerprint;
+  const domTask = {
+    jobId: payload.jobId,
+    tabId: payload.tabId,
+    prompt: payload.prompt,
+    siteId: payload.siteId || "",
+  };
+
+  const reusableResult =
+    hasRecordedPrompt && !recordedPromptMatches
+      ? null
+      : await findReusableResult(domTask, {
+          matchPromptInPage: !recordedPromptMatches,
+        });
+
+  if (reusableResult?.alreadySaved && reusableResult?.saved) {
+    await storeSavedSession(
+      sessionKey,
+      reusableResult.saved,
+      promptFingerprint,
+    );
+    return {
+      ok: true,
+      alreadySaved: true,
+      saved: reusableResult.saved,
     };
   }
 
@@ -162,16 +195,6 @@ async function startExtractionTask(payload) {
   await enqueueTaskCreation(task);
 
   try {
-    const hasRecordedPrompt = Boolean(savedSession.record?.promptFingerprint);
-    const recordedPromptMatches =
-      savedSession.record?.promptFingerprint === promptFingerprint;
-    const reusableResult =
-      hasRecordedPrompt && !recordedPromptMatches
-        ? null
-        : await findReusableResult(task, {
-            matchPromptInPage: !recordedPromptMatches,
-          });
-
     if (reusableResult) {
       await chrome.alarms.create(taskAlarmName(task.jobId), {
         delayInMinutes: SAVING_TIMEOUT_MINUTES,
@@ -590,6 +613,13 @@ async function findReusableResult(task, options = {}) {
         prompt: task.prompt,
       },
     });
+    if (response?.alreadySaved && response?.saved) {
+      return {
+        alreadySaved: true,
+        saved: response.saved,
+        result: response.result,
+      };
+    }
     return response?.reusable ? response.result : null;
   } catch {
     return null;

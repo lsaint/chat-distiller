@@ -16,7 +16,7 @@
   "distillationPrompt": { "message": "Distillation prompt" },
   "resetDefault": { "message": "Reset to default" },
   "autoDisclosure": {
-    "message": "After you click “Generate and save,” the extension automatically enters and sends the prompt above in the current ChatGPT chat."
+    "message": "After you click “Generate and save,” the extension automatically enters and sends the prompt above in the current AI chat."
   },
   "generateAndSave": { "message": "Generate and save" },
   "pageRefreshRequired": {

@@ -4,6 +4,25 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-08-10
+
+### Added
+
+- Add compact popup shortcuts for settings, the GitHub project, and supporting
+  development, plus an icon-based prompt reset action.
+
+### Changed
+
+- Widen and reorganize the popup into a compact field layout for clearer root
+  directory, subdirectory, and filename controls.
+- Recommend Chrome Web Store installation in the README and add attributable
+  support links.
+
+### Fixed
+
+- Check the stored directory handle's current read-write permission before
+  enabling generation, and make directory status fields directly actionable.
+
 ## [1.1.2] - 2026-08-09
 
 ### Changed
@@ -59,7 +78,8 @@ All notable changes to this project will be documented in this file.
 - Distribute the same deterministic extension ZIP through the Chrome Web Store
   submission process and GitHub Releases.
 
-[Unreleased]: https://github.com/lsaint/chat-distiller/compare/v1.1.2...HEAD
+[Unreleased]: https://github.com/lsaint/chat-distiller/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/lsaint/chat-distiller/compare/v1.1.2...v1.2.0
 [1.1.2]: https://github.com/lsaint/chat-distiller/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/lsaint/chat-distiller/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/lsaint/chat-distiller/compare/v1.0.0...v1.1.0

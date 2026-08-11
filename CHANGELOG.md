@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.3.1] - 2026-08-11
+
+### Changed
+
+- Shorten `rootDirectory` and `subdirectory` label text in popup and settings interfaces.
+- Add Chat Distiller brand icon to in-page memory card status header.
+
 ## [1.3.0] - 2026-08-10
 
 ### Added
@@ -90,7 +97,8 @@ All notable changes to this project will be documented in this file.
 - Distribute the same deterministic extension ZIP through the Chrome Web Store
   submission process and GitHub Releases.
 
-[Unreleased]: https://github.com/lsaint/chat-distiller/compare/v1.3.0...HEAD
+[Unreleased]: https://github.com/lsaint/chat-distiller/compare/v1.3.1...HEAD
+[1.3.1]: https://github.com/lsaint/chat-distiller/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/lsaint/chat-distiller/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/lsaint/chat-distiller/compare/v1.1.2...v1.2.0
 [1.1.2]: https://github.com/lsaint/chat-distiller/compare/v1.1.1...v1.1.2

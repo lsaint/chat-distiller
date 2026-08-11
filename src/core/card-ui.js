@@ -28,6 +28,13 @@ function setMemoryTurnCollapsed(assistantElement, collapsed) {
   }
 }
 
+function getBrandIconUrl() {
+  if (typeof globalThis.chrome !== "undefined" && globalThis.chrome?.runtime?.getURL) {
+    return globalThis.chrome.runtime.getURL("icons/icon-32.png");
+  }
+  return "";
+}
+
 function ensureMemoryCard(element, jobId, task = {}) {
   if (!element) {
     return null;
@@ -45,9 +52,23 @@ function ensureMemoryCard(element, jobId, task = {}) {
     card.dataset.jobId = jobId || "restored";
     card.setAttribute("role", "status");
 
+    const statusGroup = document.createElement("div");
+    statusGroup.className = "chat-distiller-card-header";
+
+    const iconUrl = getBrandIconUrl();
+    if (iconUrl) {
+      const brandIcon = document.createElement("img");
+      brandIcon.className = "chat-distiller-brand-icon";
+      brandIcon.src = iconUrl;
+      brandIcon.alt = "Chat Distiller";
+      brandIcon.setAttribute("aria-hidden", "true");
+      statusGroup.append(brandIcon);
+    }
+
     const status = document.createElement("span");
     status.dataset.role = "status";
     status.textContent = t("generatingMemory");
+    statusGroup.append(status);
 
     const toggle = document.createElement("button");
     toggle.type = "button";
@@ -82,8 +103,28 @@ function ensureMemoryCard(element, jobId, task = {}) {
       }
     });
 
-    card.append(status, taskAction, toggle);
+    card.append(statusGroup, taskAction, toggle);
     mountPoint.append(card);
+  } else {
+    let statusGroup = card.querySelector(".chat-distiller-card-header");
+    const status = card.querySelector('[data-role="status"]');
+    if (!statusGroup && status) {
+      statusGroup = document.createElement("div");
+      statusGroup.className = "chat-distiller-card-header";
+      status.before(statusGroup);
+      statusGroup.append(status);
+    }
+    if (statusGroup && !statusGroup.querySelector(".chat-distiller-brand-icon")) {
+      const iconUrl = getBrandIconUrl();
+      if (iconUrl) {
+        const brandIcon = document.createElement("img");
+        brandIcon.className = "chat-distiller-brand-icon";
+        brandIcon.src = iconUrl;
+        brandIcon.alt = "Chat Distiller";
+        brandIcon.setAttribute("aria-hidden", "true");
+        statusGroup.prepend(brandIcon);
+      }
+    }
   }
 
   if (jobId && jobId !== "restored") {
@@ -129,16 +170,7 @@ function applyCardState(card, task) {
     return;
   }
 
-  const icons = {
-    starting: "⏳",
-    generating: "⏳",
-    saving: "💾",
-    awaiting_permission: "🔐",
-    success: "✅",
-    error: "⚠️",
-  };
-  const icon = icons[task.status] || "⏳";
-  const nextText = `${icon} ${task.statusMessage || t("generatingMemory")}`;
+  const nextText = task.statusMessage || t("generatingMemory");
   const nextStatus = task.status || "generating";
   card.chatDistillerTask = task;
 
@@ -193,6 +225,19 @@ function injectCardStyles() {
       background: color-mix(in srgb, currentColor 5%, transparent);
       font-size: 13px;
       line-height: 1.45;
+    }
+    [${CARD_ATTRIBUTE}] .chat-distiller-card-header {
+      display: flex;
+      align-items: center;
+      min-width: 0;
+    }
+    [${CARD_ATTRIBUTE}] .chat-distiller-brand-icon {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+      object-fit: contain;
+      display: block;
+      margin-right: 1ch;
     }
     [${CARD_ATTRIBUTE}][data-status="success"] {
       color: #137333;

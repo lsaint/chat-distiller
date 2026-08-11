@@ -33,14 +33,25 @@
   };
 
   function getLocale() {
-    return /^zh(?:[-_]|$)/i.test(chrome.i18n.getUILanguage())
-      ? ZH_LOCALE
-      : EN_LOCALE;
+    const lang =
+      typeof chrome !== "undefined" && chrome?.i18n?.getUILanguage
+        ? chrome.i18n.getUILanguage()
+        : (globalThis.navigator?.language || EN_LOCALE);
+    return /^zh(?:[-_]|$)/i.test(lang) ? ZH_LOCALE : EN_LOCALE;
   }
 
   function t(key, substitutions) {
-    const message = chrome.i18n.getMessage(key, substitutions);
-    return message || key;
+    if (typeof chrome !== "undefined" && chrome?.i18n?.getMessage) {
+      try {
+        const message = chrome.i18n.getMessage(key, substitutions);
+        if (message) {
+          return message;
+        }
+      } catch {
+        // Fall back to key if extension context was invalidated
+      }
+    }
+    return key;
   }
 
   function localizeDocument(root = document) {

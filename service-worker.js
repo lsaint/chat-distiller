@@ -136,16 +136,9 @@ async function startExtractionTask(payload) {
   const sessionKey = getSessionKey(payload.sourceUrl, payload.siteId);
   const promptFingerprint = await createPromptFingerprint(payload.prompt);
   const savedSession = await getSavedSessionState(sessionKey);
-  if (
-    savedSession.fileExists &&
-    savedSession.record?.promptFingerprint === promptFingerprint
-  ) {
-    return {
-      ok: true,
-      alreadySaved: true,
-      saved: savedSession.record.saved,
-    };
-  }
+  // Skip the early alreadySaved return; always consult the DOM-side
+  // findReusableResult which can detect whether the conversation has
+  // grown since the last save (card position vs last assistant message).
 
   const hasRecordedPrompt = Boolean(savedSession.record?.promptFingerprint);
   const recordedPromptMatches =

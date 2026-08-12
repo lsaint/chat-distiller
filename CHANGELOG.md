@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.3.2] - 2026-08-12
+
+### Fixed
+
+- Allow exporting a conversation again after new messages are added, while
+  preserving reuse of the latest valid saved result.
+
 ## [1.3.1] - 2026-08-11
 
 ### Changed
@@ -97,7 +104,8 @@ All notable changes to this project will be documented in this file.
 - Distribute the same deterministic extension ZIP through the Chrome Web Store
   submission process and GitHub Releases.
 
-[Unreleased]: https://github.com/lsaint/chat-distiller/compare/v1.3.1...HEAD
+[Unreleased]: https://github.com/lsaint/chat-distiller/compare/v1.3.2...HEAD
+[1.3.2]: https://github.com/lsaint/chat-distiller/compare/v1.3.1...v1.3.2
 [1.3.1]: https://github.com/lsaint/chat-distiller/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/lsaint/chat-distiller/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/lsaint/chat-distiller/compare/v1.1.2...v1.2.0

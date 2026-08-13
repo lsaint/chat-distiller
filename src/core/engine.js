@@ -794,7 +794,11 @@
     }
 
     const protocolContent = readProtocolContent(message);
-    if (!isProtocolContentComplete(protocolContent)) {
+    const restorable =
+      isProtocolContentComplete(protocolContent) ||
+      adapter.isRecoverableProtocolContent(protocolContent);
+
+    if (!restorable) {
       return;
     }
 

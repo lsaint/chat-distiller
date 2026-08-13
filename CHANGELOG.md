@@ -4,6 +4,24 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-08-13
+
+### Changed
+
+- Keep generation, save, success, and error status in the main popup above the
+  generate button instead of switching to a separate progress view.
+- Dynamically reduce the prompt field by up to two lines when longer status
+  messages approach Chrome's popup height limit.
+
+### Fixed
+
+- Keep generation available on Windows when a valid stored directory handle
+  temporarily reports that permission needs confirmation.
+- Restore DeepSeek Memory cards after a page refresh when the saved Markdown
+  uses DeepSeek's restored DOM structure.
+- Re-create a previously saved Memory file when it was deleted from disk,
+  reusing the existing generated result without sending the prompt again.
+
 ## [1.3.2] - 2026-08-12
 
 ### Fixed
@@ -104,7 +122,8 @@ All notable changes to this project will be documented in this file.
 - Distribute the same deterministic extension ZIP through the Chrome Web Store
   submission process and GitHub Releases.
 
-[Unreleased]: https://github.com/lsaint/chat-distiller/compare/v1.3.2...HEAD
+[Unreleased]: https://github.com/lsaint/chat-distiller/compare/v1.4.0...HEAD
+[1.4.0]: https://github.com/lsaint/chat-distiller/compare/v1.3.2...v1.4.0
 [1.3.2]: https://github.com/lsaint/chat-distiller/compare/v1.3.1...v1.3.2
 [1.3.1]: https://github.com/lsaint/chat-distiller/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/lsaint/chat-distiller/compare/v1.2.0...v1.3.0

@@ -150,7 +150,7 @@ async function startExtractionTask(payload) {
     siteId: payload.siteId || "",
   };
 
-  const reusableResult =
+  let reusableResult =
     hasRecordedPrompt && !recordedPromptMatches
       ? null
       : await findReusableResult(domTask, {
@@ -158,16 +158,28 @@ async function startExtractionTask(payload) {
         });
 
   if (reusableResult?.alreadySaved && reusableResult?.saved) {
-    await storeSavedSession(
-      sessionKey,
-      reusableResult.saved,
-      promptFingerprint,
-    );
-    return {
-      ok: true,
-      alreadySaved: true,
-      saved: reusableResult.saved,
-    };
+    const savedFileStillExists = await savedFileExists(reusableResult.saved);
+
+    if (savedFileStillExists) {
+      await storeSavedSession(
+        sessionKey,
+        reusableResult.saved,
+        promptFingerprint,
+      );
+      return {
+        ok: true,
+        alreadySaved: true,
+        saved: reusableResult.saved,
+      };
+    }
+
+    // A restored DOM card can outlive the Markdown file on disk.
+    // If that file was deleted, reuse the already-generated Memory content
+    // and write it again instead of treating the stale card as authoritative.
+    reusableResult = reusableResult.result || null;
+    if (sessionKey) {
+      await chrome.storage.local.remove(savedSessionStorageKey(sessionKey));
+    }
   }
 
   const task = {
@@ -469,14 +481,10 @@ async function saveTaskResult(task) {
       throw createPermissionError(t("localHandleMissing"));
     }
 
-    let permission = await rootHandle.queryPermission({ mode: "readwrite" });
+    const permission = await rootHandle.queryPermission({ mode: "readwrite" });
     if (permission !== "granted") {
-      // queryPermission can report a stale non-granted state right after the
-      // side panel that obtained the grant is torn down; requestPermission()
-      // re-checks with the browser and often resolves silently in that case.
-      permission = await rootHandle.requestPermission({ mode: "readwrite" });
-    }
-    if (permission !== "granted") {
+      // Permission requests must be initiated from an extension page with
+      // user activation. The service worker only checks the current state.
       throw createPermissionError(t("localPermissionExpired"));
     }
 
@@ -617,6 +625,19 @@ async function findReusableResult(task, options = {}) {
   } catch {
     return null;
   }
+}
+
+async function savedFileExists(saved) {
+  if (!saved?.relativePath) {
+    return false;
+  }
+
+  const rootHandle = await getStoredHandle();
+  if (!rootHandle) {
+    return false;
+  }
+
+  return markdownFileExists(rootHandle, saved.relativePath);
 }
 
 async function getSavedSessionState(sessionKey) {

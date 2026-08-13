@@ -23,7 +23,6 @@ const ACTIONABLE_TASK_STATUSES = new Set([
 
 const mainView = document.querySelector("#main-view");
 const refreshView = document.querySelector("#refresh-view");
-const savingView = document.querySelector("#saving-view");
 
 const directoryStatus = document.querySelector("#directory-status");
 const statusElement = document.querySelector("#status");
@@ -37,8 +36,7 @@ const promptInput = document.querySelector("#prompt");
 const filenameInput = document.querySelector("#filename");
 const relativeDirectoryInput = document.querySelector("#relative-directory");
 
-const savingStatus = document.querySelector("#saving-status");
-const taskActionButton = document.querySelector("#cancel-saving");
+const taskActionButton = document.querySelector("#task-action");
 const cancelTaskButton = document.querySelector("#cancel-task");
 const refreshPageButton = document.querySelector("#refresh-page");
 
@@ -55,9 +53,7 @@ chrome.storage.onChanged.addListener((changes, areaName) => {
   }
 
   currentTask = changes[ACTIVE_TASK_KEY].newValue || null;
-  if (savingView.style.display !== "none") {
-    renderTask(currentTask);
-  }
+  renderTask(currentTask);
 });
 
 resetPromptButton?.addEventListener("click", async () => {
@@ -139,18 +135,12 @@ generateButton.addEventListener("click", async () => {
     }
 
     currentTask = response.task;
-    showSavingView();
     renderTask(currentTask);
   } catch (error) {
-    if (savingView.style.display !== "none") {
-      setSavingStatus(normalizeError(error), "error");
-      taskActionButton.textContent = t("back");
-      return;
-    }
     setStatus(normalizeError(error), "error");
   } finally {
     if (mainView.style.display !== "none") {
-      generateButton.disabled = false;
+      generateButton.disabled = ACTIVE_TASK_STATUSES.has(currentTask?.status);
     }
   }
 });
@@ -180,7 +170,6 @@ taskActionButton?.addEventListener("click", async () => {
     currentTask?.status === "awaiting_permission" ||
     (currentTask?.status === "error" && currentTask?.canRetrySave);
   if (!canRetrySave) {
-    showMainView();
     return;
   }
 
@@ -203,7 +192,7 @@ taskActionButton?.addEventListener("click", async () => {
       throw new Error(response?.error || t("retrySaveFailed"));
     }
   } catch (error) {
-    setSavingStatus(normalizeError(error), "error");
+    setStatus(normalizeError(error), "error");
   } finally {
     taskActionButton.disabled = false;
   }
@@ -211,7 +200,6 @@ taskActionButton?.addEventListener("click", async () => {
 
 cancelTaskButton?.addEventListener("click", async () => {
   if (!currentTask?.jobId) {
-    showMainView();
     return;
   }
 
@@ -226,7 +214,7 @@ cancelTaskButton?.addEventListener("click", async () => {
       renderTask(currentTask);
     }
   } catch (error) {
-    setSavingStatus(normalizeError(error), "error");
+    setStatus(normalizeError(error), "error");
   } finally {
     cancelTaskButton.disabled = false;
   }
@@ -312,15 +300,13 @@ async function initialize() {
     }
   }
 
-  if (shouldOpenTaskView(currentTask)) {
-    showSavingView();
+  showMainView();
+  if (shouldShowTaskStatus(currentTask)) {
     renderTask(currentTask);
-  } else {
-    showMainView();
   }
 }
 
-function shouldOpenTaskView(task) {
+function shouldShowTaskStatus(task) {
   return Boolean(
     task &&
     (ACTIONABLE_TASK_STATUSES.has(task.status) ||
@@ -330,11 +316,10 @@ function shouldOpenTaskView(task) {
 
 function renderTask(task) {
   if (!task) {
-    setSavingStatus(t("noRunningTask"), "muted");
-    taskActionButton.textContent = t("back");
-    if (cancelTaskButton) {
-      cancelTaskButton.style.display = "none";
-    }
+    taskActionButton.style.display = "none";
+    cancelTaskButton.style.display = "none";
+    setStatus("", "");
+    checkDirectoryStatus().catch(() => {});
     return;
   }
 
@@ -344,30 +329,22 @@ function renderTask(task) {
       : task.status === "error"
         ? "error"
         : "muted";
-  setSavingStatus(
-    task.statusMessage || taskStatusLabel(task.status),
-    className,
-  );
+  setStatus(task.statusMessage || taskStatusLabel(task.status), className);
 
-  if (cancelTaskButton) {
-    const canCancel = Boolean(
-      task &&
-      (ACTIVE_TASK_STATUSES.has(task.status) ||
-        task.status === "awaiting_permission"),
-    );
-    cancelTaskButton.style.display = canCancel ? "inline-block" : "none";
-  }
+  const canCancel =
+    ACTIVE_TASK_STATUSES.has(task.status) ||
+    task.status === "awaiting_permission";
+  cancelTaskButton.style.display = canCancel ? "inline-block" : "none";
+  generateButton.disabled = ACTIVE_TASK_STATUSES.has(task.status);
 
   if (task.status === "awaiting_permission") {
     taskActionButton.textContent = t("authorizeContinue");
+    taskActionButton.style.display = "inline-block";
   } else if (task.status === "error" && task.canRetrySave) {
     taskActionButton.textContent = t("retrySave");
-  } else if (task.status === "success") {
-    taskActionButton.textContent = t("done");
-  } else if (ACTIVE_TASK_STATUSES.has(task.status)) {
-    taskActionButton.textContent = t("backBackground");
+    taskActionButton.style.display = "inline-block";
   } else {
-    taskActionButton.textContent = t("back");
+    taskActionButton.style.display = "none";
   }
 }
 
@@ -385,20 +362,13 @@ function taskStatusLabel(status) {
 
 function showMainView() {
   refreshView.style.display = "none";
-  savingView.style.display = "none";
   mainView.style.display = "block";
   checkDirectoryStatus().catch(() => {});
-}
-
-function showSavingView() {
-  mainView.style.display = "none";
-  refreshView.style.display = "none";
-  savingView.style.display = "block";
+  requestAnimationFrame(fitPopupContent);
 }
 
 function showRefreshView() {
   mainView.style.display = "none";
-  savingView.style.display = "none";
   refreshView.style.display = "block";
 }
 
@@ -411,20 +381,30 @@ async function checkDirectoryStatus() {
     let displayPath =
       stored.selectedDirectoryPath ||
       (stored.selectedDirectoryName ? `~/${stored.selectedDirectoryName}` : "");
+
     const handle = await getStoredHandle();
     displayPath ||= handle?.name || "";
-    const permission = await getReadWritePermission(handle);
-    if (permission === "granted") {
-      directoryStatus.value = displayPath;
-      directoryStatus.className = "success";
-      setGenerateAvailability(true);
-    } else {
+
+    if (!handle) {
       directoryStatus.value = displayPath
         ? t("pathNeedsAuthorization")
         : t("unauthorizedClickToSet");
       directoryStatus.className = "error";
       setGenerateAvailability(false);
+      return;
     }
+
+    const permission = await getReadWritePermission(handle);
+
+    directoryStatus.value = displayPath;
+    directoryStatus.className =
+      permission === "granted" ? "success" : "muted";
+
+    // A stored handle means the root directory is configured.
+    // On Windows, queryPermission() may return "prompt" after the side panel
+    // closes even though the handle is still valid. Keep Generate enabled so
+    // its click handler can request permission within a user activation.
+    setGenerateAvailability(true);
   } catch {
     directoryStatus.value = "";
     directoryStatus.className = "error";
@@ -433,7 +413,8 @@ async function checkDirectoryStatus() {
 }
 
 function setGenerateAvailability(available) {
-  generateButton.disabled = !available;
+  generateButton.disabled =
+    !available || ACTIVE_TASK_STATUSES.has(currentTask?.status);
   if (available) {
     delete generateAction.dataset.tooltip;
   } else {
@@ -468,13 +449,23 @@ async function openSidePanel() {
 }
 
 function setStatus(message, className) {
-  statusElement.textContent = message;
-  statusElement.className = className;
+  statusElement.textContent = message || t("autoDisclosure");
+  statusElement.className = className || "muted";
+  fitPopupContent();
 }
 
-function setSavingStatus(message, className) {
-  savingStatus.textContent = message;
-  savingStatus.className = className;
+function fitPopupContent() {
+  promptInput.classList.remove("compact-one-line", "compact-two-lines");
+  if (document.documentElement.scrollHeight <= window.innerHeight) {
+    return;
+  }
+
+  promptInput.classList.add("compact-one-line");
+  if (document.documentElement.scrollHeight <= window.innerHeight) {
+    return;
+  }
+
+  promptInput.classList.add("compact-two-lines");
 }
 
 function normalizeError(error) {

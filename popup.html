@@ -128,7 +128,15 @@
 
       textarea {
         min-height: 132px;
-        resize: vertical;
+        resize: none;
+      }
+
+      textarea.compact-one-line {
+        min-height: 111px;
+      }
+
+      textarea.compact-two-lines {
+        min-height: 90px;
       }
 
       .actions {
@@ -204,10 +212,30 @@
 
       #status,
       #settings-status {
-        margin-top: 12px;
+        margin: 10px 0 0;
         font-size: 12px;
         line-height: 1.45;
         overflow-wrap: anywhere;
+      }
+
+      #status:empty {
+        display: none;
+      }
+
+      #task-action,
+      #cancel-task {
+        display: none;
+        flex: 0 0 auto;
+      }
+
+      #task-action {
+        color: #202124;
+        background: #eeeeee;
+      }
+
+      #cancel-task {
+        color: #c5221f;
+        background: #fce8e6;
       }
 
       .success {
@@ -351,11 +379,7 @@
       </div>
       <textarea id="prompt"></textarea>
 
-      <p
-        class="muted"
-        style="font-size: 12px; line-height: 1.45; margin: 10px 0 0"
-        data-i18n="autoDisclosure"
-      >
+      <p id="status" class="muted" data-i18n="autoDisclosure">
         After you click “Generate and save,” the extension automatically enters
         and sends the prompt above in the current AI chat.
       </p>
@@ -364,9 +388,11 @@
         <button id="generate" data-i18n="generateAndSave">
           Generate and save
         </button>
+        <button id="task-action" type="button"></button>
+        <button id="cancel-task" type="button" data-i18n="cancelTask">
+          Cancel task
+        </button>
       </div>
-
-      <div id="status" class="muted"></div>
     </div>
 
     <!-- Page Refresh View -->
@@ -388,59 +414,6 @@
       <div class="actions">
         <button id="refresh-page" type="button" data-i18n="refreshPage">
           Refresh page
-        </button>
-      </div>
-    </div>
-
-    <!-- Saving Progress View -->
-    <div id="saving-view" style="display: none">
-      <div class="view-header">
-        <h2 data-i18n="progressTitle">Generation and save progress</h2>
-      </div>
-
-      <div
-        class="setting-card"
-        style="background: #e8f0fe; border-color: #d2e3fc; color: #174ea6"
-      >
-        <p style="margin: 0; color: #174ea6">
-          <strong data-i18n="tipLabel">Tip:</strong>
-          <span data-i18n="backgroundTip"
-            >The task continues in the background, so you can close this
-            popup.</span
-          >
-        </p>
-      </div>
-
-      <div
-        id="saving-status"
-        class="muted"
-        style="
-          margin-top: 14px;
-          font-size: 13px;
-          line-height: 1.55;
-          overflow-wrap: anywhere;
-        "
-        data-i18n="initializing"
-      >
-        Initializing…
-      </div>
-
-      <div class="actions" style="margin-top: 18px; display: flex; gap: 8px">
-        <button
-          id="cancel-saving"
-          type="button"
-          style="background: #eeeeee; color: #202124"
-          data-i18n="back"
-        >
-          Back
-        </button>
-        <button
-          id="cancel-task"
-          type="button"
-          style="background: #fce8e6; color: #c5221f; display: none"
-          data-i18n="cancelTask"
-        >
-          Cancel task
         </button>
       </div>
     </div>

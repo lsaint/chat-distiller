@@ -315,6 +315,14 @@
   globalThis.ChatDistiller.registerAdapter({
     siteId: "deepseek",
 
+    // DeepSeek may restore historical Markdown with a different DOM shape
+    // after a page refresh. Include the Markdown container itself so protocol
+    // restoration does not depend only on the transient pre/code structure.
+    protocolBlockSelector:
+      ".ds-assistant-message-main-content pre code, " +
+      ".ds-assistant-message-main-content pre, " +
+      ".ds-assistant-message-main-content .ds-markdown",
+
     // Input
     findPromptEditor,
     findSendButton,

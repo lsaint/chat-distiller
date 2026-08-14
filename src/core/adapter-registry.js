@@ -54,6 +54,7 @@
       protocolBlockSelector: "pre code, pre",
       contentStableMs: 5000,
       contentStableWithActionsMs: 1000,
+      deferCollapseUntilGenerationStops: false,
 
       // Site-supplied overrides
       ...adapter,

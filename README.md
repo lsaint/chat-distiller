@@ -56,6 +56,7 @@ Chat Distiller records saved conversation metadata to prevent duplicate saves an
 
 - ChatGPT
 - DeepSeek
+- Gemini
 
 Additional AI chat sites can be added through the Site Adapter interface.
 

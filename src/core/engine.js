@@ -16,6 +16,9 @@
   const {
     CARD_ATTRIBUTE,
     configureCardUi,
+    setPromptTurnCollapsed,
+    setMemoryTurnCollapsed,
+    setMemoryTurnCollapseLocked,
     ensureMemoryCard,
     updateMemoryCard,
     injectCardStyles,
@@ -40,6 +43,8 @@
   let resultDeliveryRetryTimer = null;
   let protocolDeliveryTimer = null;
   let activeRunId = 0;
+  const deferredCollapseMessages = new WeakSet();
+  const collapseReadyMessages = new WeakSet();
   const TERMINAL_TASK_STATUSES = new Set([
     "awaiting_permission",
     "error",
@@ -181,6 +186,7 @@
     activeBaselineProtocolContent = readProtocolContent(
       initialElements[initialElements.length - 1],
     );
+    const initialUserSet = new WeakSet(adapter.getUserMessages());
 
     try {
       await submitPrompt(promptText, runId);
@@ -189,9 +195,12 @@
     }
 
     assertActiveRun(runId);
+    if (config.collapseOutput !== false) {
+      collapseSubmittedPrompt(initialUserSet, runId);
+    }
     const generatedElement = await waitForNewAssistantMessage(runId);
     if (config.collapseOutput !== false) {
-      ensureMemoryCard(generatedElement, config.jobId, {
+      ensureGeneratingMemoryCard(generatedElement, config.jobId, {
         status: "generating",
         statusMessage: buildGeneratingMessage(generatedElement),
       });
@@ -221,6 +230,20 @@
       sourceUrl: location.href,
       siteId: adapter.siteId,
     };
+  }
+
+  async function collapseSubmittedPrompt(initialUserSet, runId) {
+    const timeoutAt = Date.now() + 15_000;
+    while (Date.now() < timeoutAt && isActiveRun(runId)) {
+      const userMessages = adapter.getUserMessages();
+      const latest = userMessages[userMessages.length - 1];
+      if (latest && !initialUserSet.has(latest)) {
+        injectCardStyles();
+        setPromptTurnCollapsed(latest, true);
+        return;
+      }
+      await sleep(50);
+    }
   }
 
   // ---- Prompt submission ----
@@ -321,6 +344,44 @@
     return chars > 0
       ? t("generatingMemoryChars", String(chars))
       : t("generatingMemory");
+  }
+
+  function ensureGeneratingMemoryCard(element, jobId, task) {
+    const deferCollapse = adapter.deferCollapseUntilGenerationStops === true;
+    const collapseReady = collapseReadyMessages.has(element);
+    const card = ensureMemoryCard(element, jobId, {
+      ...task,
+      initiallyCollapsed: !deferCollapse,
+      collapseLocked: deferCollapse && !collapseReady,
+    });
+    if (deferCollapse && !collapseReady) {
+      deferMessageCollapse(element);
+    }
+    return card;
+  }
+
+  async function deferMessageCollapse(element) {
+    if (deferredCollapseMessages.has(element)) {
+      return;
+    }
+    deferredCollapseMessages.add(element);
+
+    const timeoutAt = Date.now() + 300_000;
+    let observedGeneration = false;
+    while (element.isConnected && Date.now() < timeoutAt) {
+      const generationActive = adapter.isGenerationActive();
+      observedGeneration ||= generationActive;
+      const protocolComplete = isProtocolContentComplete(
+        readProtocolContent(element),
+      );
+      if (!generationActive && (observedGeneration || protocolComplete)) {
+        collapseReadyMessages.add(element);
+        setMemoryTurnCollapseLocked(element, false);
+        setMemoryTurnCollapsed(element, true);
+        return;
+      }
+      await sleep(200);
+    }
   }
 
   // ---- Reusable extraction ----
@@ -529,7 +590,7 @@
       }
 
       if (activeJobId && current) {
-        ensureMemoryCard(current, activeJobId, {
+        ensureGeneratingMemoryCard(current, activeJobId, {
           status: "generating",
           statusMessage: buildGeneratingMessage(current),
         });
@@ -541,7 +602,12 @@
       assertActiveRun(runId);
       const rawText = current ? extractRawMessageText(current) : "";
       const now = Date.now();
-      const generationActive = adapter.isGenerationActive();
+      // A complete protocol on the resolved job target is authoritative for
+      // convergence even when a site leaves its busy/stop UI stale. Keep the
+      // adapter signal unchanged for target recovery and result reuse.
+      const targetProtocolComplete = isProtocolContentComplete(currentText);
+      const generationActive =
+        adapter.isGenerationActive() && !targetProtocolComplete;
       const responseComplete = current
         ? adapter.hasResponseActions(current)
         : false;
@@ -786,7 +852,7 @@
     // user and freeze every later status update via the success guard in
     // applyCardState().
     if (activeJobId && !activeInitialAssistantSet?.has(message)) {
-      ensureMemoryCard(message, activeJobId, {
+      ensureGeneratingMemoryCard(message, activeJobId, {
         status: "generating",
         statusMessage: buildGeneratingMessage(message),
       });
@@ -827,10 +893,6 @@
 
   async function deliverCompletedProtocolResult() {
     if (!activeJobId || resultDeliveryStarted) {
-      return;
-    }
-
-    if (adapter.isGenerationActive()) {
       return;
     }
 

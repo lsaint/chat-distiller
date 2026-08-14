@@ -22,6 +22,12 @@ export const SUPPORTED_SITES = [
     origins: ["https://chat.deepseek.com/"],
     conversationIdPattern: /\/a\/chat\/s\/([^/]+)/,
   },
+  {
+    siteId: "gemini",
+    displayName: "Gemini",
+    origins: ["https://gemini.google.com/"],
+    conversationIdPattern: /\/app\/([^/]+)/,
+  },
 ];
 
 export function getSiteForUrl(url) {

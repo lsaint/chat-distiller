@@ -28,6 +28,23 @@ function setMemoryTurnCollapsed(assistantElement, collapsed) {
   }
 }
 
+function setPromptTurnCollapsed(promptElement, collapsed) {
+  if (!promptElement) {
+    return;
+  }
+  promptElement.setAttribute(PROMPT_COLLAPSED_ATTRIBUTE, String(collapsed));
+}
+
+function setMemoryTurnCollapseLocked(assistantElement, locked) {
+  const mountPoint = resolveCardMountPoint(assistantElement);
+  const toggle = mountPoint.querySelector(
+    `:scope > [${CARD_ATTRIBUTE}] [data-role="collapse-toggle"]`,
+  );
+  if (toggle) {
+    toggle.disabled = locked;
+  }
+}
+
 function getBrandIconUrl() {
   if (typeof globalThis.chrome !== "undefined" && globalThis.chrome?.runtime?.getURL) {
     return globalThis.chrome.runtime.getURL("icons/icon-32.png");
@@ -72,6 +89,7 @@ function ensureMemoryCard(element, jobId, task = {}) {
 
     const toggle = document.createElement("button");
     toggle.type = "button";
+    toggle.dataset.role = "collapse-toggle";
     toggle.textContent = collapseTarget.getAttribute(COLLAPSED_ATTRIBUTE) === "false"
       ? t("collapseContent")
       : t("expandContent");
@@ -137,12 +155,20 @@ function ensureMemoryCard(element, jobId, task = {}) {
     card.dataset.jobId = jobId;
   }
   if (!collapseTarget.hasAttribute(COLLAPSED_ATTRIBUTE)) {
-    setMemoryTurnCollapsed(element, true);
+    setMemoryTurnCollapsed(element, task.initiallyCollapsed !== false);
   } else {
     setMemoryTurnCollapsed(
       element,
       collapseTarget.getAttribute(COLLAPSED_ATTRIBUTE) !== "false"
     );
+  }
+  const toggle = card.querySelector('[data-role="collapse-toggle"]');
+  if (toggle) {
+    toggle.textContent =
+      collapseTarget.getAttribute(COLLAPSED_ATTRIBUTE) === "false"
+        ? t("collapseContent")
+        : t("expandContent");
+    toggle.disabled = task.collapseLocked === true;
   }
   applyCardState(card, task);
   return card;
@@ -267,6 +293,9 @@ globalThis.ChatDistiller.cardUi = {
   COLLAPSED_ATTRIBUTE,
   PROMPT_COLLAPSED_ATTRIBUTE,
   configureCardUi,
+  setPromptTurnCollapsed,
+  setMemoryTurnCollapsed,
+  setMemoryTurnCollapseLocked,
   ensureMemoryCard,
   updateMemoryCard,
   applyCardState,

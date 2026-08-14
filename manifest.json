@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "__MSG_extName__",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "minimum_chrome_version": "116",
   "description": "__MSG_extDescription__",
   "default_locale": "en",
@@ -15,7 +15,8 @@
   "host_permissions": [
     "https://chatgpt.com/*",
     "https://chat.openai.com/*",
-    "https://chat.deepseek.com/*"
+    "https://chat.deepseek.com/*",
+    "https://gemini.google.com/*"
   ],
   "web_accessible_resources": [
     {
@@ -25,7 +26,8 @@
       "matches": [
         "https://chatgpt.com/*",
         "https://chat.openai.com/*",
-        "https://chat.deepseek.com/*"
+        "https://chat.deepseek.com/*",
+        "https://gemini.google.com/*"
       ]
     }
   ],
@@ -74,6 +76,24 @@
         "src/core/editor.js",
         "src/core/adapter-registry.js",
         "src/site/deepseek.js",
+        "src/core/engine.js",
+        "src/content-entry.js"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://gemini.google.com/*"
+      ],
+      "js": [
+        "prompt-constants.js",
+        "i18n.js",
+        "src/core/protocol.js",
+        "src/core/dom-utils.js",
+        "src/core/card-ui.js",
+        "src/core/editor.js",
+        "src/core/adapter-registry.js",
+        "src/site/gemini.js",
         "src/core/engine.js",
         "src/content-entry.js"
       ],

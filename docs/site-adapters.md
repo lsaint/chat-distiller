@@ -16,6 +16,8 @@ site names messages, editors, send buttons, or generation controls.
    `content-entry.js`.
 7. Verify prompt submission, generation detection, extraction, retry, duplicate
    detection, tab navigation, and directory reauthorization on the real site.
+8. Add the site to both README support lists and the architecture file tree,
+   then record the new support in the changelog.
 
 ## Interface Boundary
 

@@ -35,7 +35,7 @@ selectButton.addEventListener("click", async () => {
     }
     let handle = await getStoredHandle();
     const existingPermission = await handle?.queryPermission({ mode: "readwrite" });
-    if (!handle || existingPermission === "granted") {
+    if (!handle || existingPermission === "denied" || existingPermission === "granted") {
       handle = await window.showDirectoryPicker({
         id: "chat-distiller-root",
         mode: "readwrite",

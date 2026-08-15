@@ -92,19 +92,19 @@ generateButton.addEventListener("click", async () => {
 
     const rootHandle = await getStoredHandle();
     if (!rootHandle) {
-      throw new Error(t("noRoot"));
+      await openSidePanel();
+      window.close();
+      return;
     }
 
     let permission = await rootHandle.queryPermission({ mode: "readwrite" });
-    if (permission !== "granted") {
-      // queryPermission can report a stale non-granted state right after the
-      // side panel that obtained the grant is torn down. requestPermission()
-      // here runs inside this click's user activation, so on platforms
-      // (observed on Windows) where the cached grant needs re-confirming it
-      // can resolve silently instead of forcing the user back into settings.
+    if (permission === "prompt") {
+      // Generate is a direct user gesture in the extension popup, so a stored
+      // handle can be re-authorized here without opening the side panel.
       permission = await rootHandle.requestPermission({ mode: "readwrite" });
     }
     if (permission !== "granted") {
+      // A missing or denied handle requires the directory setup flow.
       await openSidePanel();
       window.close();
       return;

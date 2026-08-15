@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.5.1] - 2026-08-15
+
+### Fixed
+
+- Re-authorize stored directory permission directly in the popup during the
+  generate gesture when prompted, without forcing users into the side panel.
+- Preserve user gesture activation by opening the side panel immediately when
+  requested from an in-page status card.
+- Re-open the directory picker from the side panel when the existing handle's
+  permission is denied.
+
 ## [1.5.0] - 2026-08-14
 
 ### Added
@@ -129,7 +140,8 @@ All notable changes to this project will be documented in this file.
 - Distribute the same deterministic extension ZIP through the Chrome Web Store
   submission process and GitHub Releases.
 
-[Unreleased]: https://github.com/lsaint/chat-distiller/compare/v1.5.0...HEAD
+[Unreleased]: https://github.com/lsaint/chat-distiller/compare/v1.5.1...HEAD
+[1.5.1]: https://github.com/lsaint/chat-distiller/compare/v1.5.0...v1.5.1
 [1.5.0]: https://github.com/lsaint/chat-distiller/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/lsaint/chat-distiller/compare/v1.3.2...v1.4.0
 [1.3.2]: https://github.com/lsaint/chat-distiller/compare/v1.3.1...v1.3.2

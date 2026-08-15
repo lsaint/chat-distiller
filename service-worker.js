@@ -448,8 +448,13 @@ async function retryTaskSaveFromTab(message, sender) {
 }
 
 async function openSidePanelFromTab(message, sender) {
-  const task = await getAuthorizedContentTask(message.jobId, sender);
-  await chrome.sidePanel.open({ tabId: task.tabId });
+  if (!sender.tab?.id) {
+    throw new Error(t("unauthorizedSender"));
+  }
+
+  // sidePanel.open() must be invoked while the content-script click still
+  // carries user activation. Do not await storage or task validation first.
+  await chrome.sidePanel.open({ tabId: sender.tab.id });
   return { ok: true };
 }
 

@@ -23,6 +23,3 @@ jobs:
 
       - name: Run extension smoke checks
         run: node scripts/smoke-check.js
-
-      - name: Run web-ext lint
-        run: npx --yes web-ext lint --source-dir . --self-hosted

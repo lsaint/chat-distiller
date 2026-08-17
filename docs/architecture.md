@@ -26,7 +26,8 @@ chat-distiller/
     ├── site/
     │   ├── chatgpt.js             # ChatGPT-specific DOM adapter
     │   ├── deepseek.js            # DeepSeek-specific DOM adapter
-    │   └── gemini.js              # Gemini-specific DOM adapter
+    │   ├── gemini.js              # Gemini-specific DOM adapter
+    │   └── doubao.js              # Doubao-specific DOM adapter
     └── content-entry.js           # Adapter validation and engine startup
 ```
 

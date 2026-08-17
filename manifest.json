@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "__MSG_extName__",
-  "version": "1.5.1",
+  "version": "1.6.0",
   "minimum_chrome_version": "116",
   "description": "__MSG_extDescription__",
   "default_locale": "en",
@@ -16,7 +16,9 @@
     "https://chatgpt.com/*",
     "https://chat.openai.com/*",
     "https://chat.deepseek.com/*",
-    "https://gemini.google.com/*"
+    "https://gemini.google.com/*",
+    "https://www.doubao.com/*",
+    "https://doubao.com/*"
   ],
   "web_accessible_resources": [
     {
@@ -27,7 +29,9 @@
         "https://chatgpt.com/*",
         "https://chat.openai.com/*",
         "https://chat.deepseek.com/*",
-        "https://gemini.google.com/*"
+        "https://gemini.google.com/*",
+        "https://www.doubao.com/*",
+        "https://doubao.com/*"
       ]
     }
   ],
@@ -94,6 +98,25 @@
         "src/core/editor.js",
         "src/core/adapter-registry.js",
         "src/site/gemini.js",
+        "src/core/engine.js",
+        "src/content-entry.js"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://www.doubao.com/*",
+        "https://doubao.com/*"
+      ],
+      "js": [
+        "prompt-constants.js",
+        "i18n.js",
+        "src/core/protocol.js",
+        "src/core/dom-utils.js",
+        "src/core/card-ui.js",
+        "src/core/editor.js",
+        "src/core/adapter-registry.js",
+        "src/site/doubao.js",
         "src/core/engine.js",
         "src/content-entry.js"
       ],

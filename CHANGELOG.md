@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.6.0] - 2026-08-17
+
+### Added
+
+- Add Doubao site adapter support (`https://www.doubao.com/*`, `https://doubao.com/*`) with dedicated DOM selectors, search/plugin noise filtering, and prompt interaction handling.
+
 ## [1.5.1] - 2026-08-15
 
 ### Fixed

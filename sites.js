@@ -28,6 +28,12 @@ export const SUPPORTED_SITES = [
     origins: ["https://gemini.google.com/"],
     conversationIdPattern: /\/app\/([^/]+)/,
   },
+  {
+    siteId: "doubao",
+    displayName: "Doubao",
+    origins: ["https://www.doubao.com/", "https://doubao.com/"],
+    conversationIdPattern: /\/chat\/([^/?#]+)/,
+  },
 ];
 
 export function getSiteForUrl(url) {

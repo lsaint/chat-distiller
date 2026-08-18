@@ -58,6 +58,7 @@ Chat Distiller 会记录对话与文件的关联状态，防止重复保存，�
 - DeepSeek
 - Gemini
 - 豆包 (Doubao)
+- Perplexity
 
 其他 AI 对话站点可以通过 Site Adapter 接口扩展。
 

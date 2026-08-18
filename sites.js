@@ -34,6 +34,12 @@ export const SUPPORTED_SITES = [
     origins: ["https://www.doubao.com/", "https://doubao.com/"],
     conversationIdPattern: /\/chat\/([^/?#]+)/,
   },
+  {
+    siteId: "perplexity",
+    displayName: "Perplexity",
+    origins: ["https://www.perplexity.ai/"],
+    conversationIdPattern: /\/(?:search|page)\/([^/?#]+)/,
+  },
 ];
 
 export function getSiteForUrl(url) {

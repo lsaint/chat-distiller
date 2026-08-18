@@ -58,6 +58,7 @@ Chat Distiller records saved conversation metadata to prevent duplicate saves an
 - DeepSeek
 - Gemini
 - Doubao
+- Perplexity
 
 Additional AI chat sites can be added through the Site Adapter interface.
 

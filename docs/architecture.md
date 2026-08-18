@@ -27,7 +27,8 @@ chat-distiller/
     │   ├── chatgpt.js             # ChatGPT-specific DOM adapter
     │   ├── deepseek.js            # DeepSeek-specific DOM adapter
     │   ├── gemini.js              # Gemini-specific DOM adapter
-    │   └── doubao.js              # Doubao-specific DOM adapter
+    │   ├── doubao.js              # Doubao-specific DOM adapter
+    │   └── perplexity.js          # Perplexity-specific DOM adapter
     └── content-entry.js           # Adapter validation and engine startup
 ```
 
@@ -56,6 +57,48 @@ The engine owns protocol timing and state transitions. A site adapter may opt
 into recovery for a known rendering or model-output deviation through
 `isRecoverableProtocolContent(content)`, but the core still decides when the
 response is final and stable enough to use that recovery.
+
+### Site Adapter Contract
+
+An adapter passed to `ChatDistiller.registerAdapter()` has three kinds of
+members. Adding a site should not require reading `engine.js` to discover this
+contract.
+
+Every adapter must provide:
+
+- `siteId`
+- `findPromptEditor()` and `findSendButton()`
+- `getAssistantMessages()` and `getUserMessages()`
+- `getAssistantFromNode(node)`
+- `isGenerationActive()` and `hasResponseActions(message)`
+- `extractMessageText(message)`
+- `getConversationTitle()`
+
+The registry supplies defaults that an adapter may override:
+
+- `insertPrompt(editor, prompt)` returns a boolean or a `Promise<boolean>`.
+- `waitForEditorContent(editor, prompt, timeoutMs)` may return a value or a
+  promise; the engine waits for it before locating the send button.
+- `triggerSend(sendButton, editor)` may return a value or a promise. Its default
+  calls `sendButton.click()`.
+- `protocolBlockSelector` selects possible protocol containers.
+- `contentStableMs`, `contentStableWithActionsMs`, and `sendButtonSettleMs`
+  configure generation timing.
+- `deferCollapseUntilGenerationStops` keeps a response visible while a site
+  requires its renderer to remain mounted.
+
+Optional hooks also have conservative defaults:
+
+- `getCardMountPoint(message)`, `getCollapseTarget(message)`, and
+  `getPromptCollapseTarget(message)` customize turn positioning and collapse
+  targets.
+- `isRecoverableProtocolContent(content)` opts a site into recovery from a
+  known protocol deviation; it returns `false` by default.
+
+The boundary test is whether a change names a site or relies on technology or
+markup unique to it, such as Lexical, React state, or a site-specific class. If
+so, it belongs in that site's adapter. Core changes are limited to widening the
+shared contract or adding a site-neutral option with a safe default.
 
 ## Task Lifecycle
 

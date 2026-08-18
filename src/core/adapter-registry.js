@@ -28,6 +28,10 @@
     return false;
   }
 
+  function defaultTriggerSend(sendButton) {
+    sendButton.click();
+  }
+
   function registerAdapter(adapter) {
     if (!adapter || !adapter.siteId) {
       throw new Error(
@@ -50,11 +54,18 @@
       // Protocol deviations are opt-in and owned by the affected site.
       isRecoverableProtocolContent: defaultIsRecoverableProtocolContent,
 
+      // Send behavior. A plain click is enough for most sites; frameworks that
+      // need a full event sequence override this.
+      triggerSend: defaultTriggerSend,
+
       // Overridable timing defaults
       protocolBlockSelector: "pre code, pre",
       contentStableMs: 5000,
       contentStableWithActionsMs: 1000,
       deferCollapseUntilGenerationStops: false,
+      // Delay between prompt insertion and looking for the send button, for
+      // sites that re-enable it asynchronously.
+      sendButtonSettleMs: 0,
 
       // Site-supplied overrides
       ...adapter,

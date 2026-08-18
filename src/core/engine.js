@@ -252,13 +252,20 @@
     assertActiveRun(runId);
     editor.focus();
 
-    const inserted = adapter.insertPrompt(editor, prompt);
+    // Adapters may insert asynchronously (Lexical editors commit via React state).
+    const inserted = await adapter.insertPrompt(editor, prompt);
     if (!inserted) {
       throw new Error(t("insertPromptFailed"));
     }
 
     await adapter.waitForEditorContent(editor, prompt, 4_000);
     assertActiveRun(runId);
+
+    if (adapter.sendButtonSettleMs > 0) {
+      await sleep(adapter.sendButtonSettleMs);
+      assertActiveRun(runId);
+    }
+
     const sendButton = await waitForElement(adapter.findSendButton, 10_000);
     assertActiveRun(runId);
 
@@ -269,7 +276,7 @@
       throw new Error(t("sendButtonDisabled"));
     }
 
-    sendButton.click();
+    await adapter.triggerSend(sendButton, editor);
   }
 
   // ---- Protocol content reading ----
@@ -842,7 +849,7 @@
     }
 
     const message = adapter.getAssistantFromNode(codeBlock);
-    if (!message || message.querySelector(`:scope > [${CARD_ATTRIBUTE}]`)) {
+    if (!message) {
       return;
     }
 
@@ -856,6 +863,10 @@
         status: "generating",
         statusMessage: buildGeneratingMessage(message),
       });
+      return;
+    }
+
+    if (message.querySelector(`:scope > [${CARD_ATTRIBUTE}]`)) {
       return;
     }
 

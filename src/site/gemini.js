@@ -2,7 +2,7 @@
   // Gemini Site Adapter — Gemini-specific DOM selectors and site behavior.
   // Registered as globalThis.ChatDistiller.adapter for the core engine to consume.
 
-  const { getElementText, isVisible } = globalThis.ChatDistiller.dom;
+  const { getElementText, getLongestCodeText, isVisible } = globalThis.ChatDistiller.dom;
   const { isThinkingOnlyText } = globalThis.ChatDistiller.editor;
   const { CARD_ATTRIBUTE } = globalThis.ChatDistiller.cardUi;
   const {
@@ -216,15 +216,9 @@
       clone.querySelectorAll(selector).forEach((node) => node.remove());
     }
 
-    const codeBlocks = Array.from(clone.querySelectorAll('pre code'));
-    if (codeBlocks.length > 0) {
-      codeBlocks.sort(
-        (a, b) => getElementText(b).trim().length - getElementText(a).trim().length,
-      );
-      const codeText = getElementText(codeBlocks[0]).trim();
-      if (codeText.length > 10 && !isThinkingOnlyText(codeText)) {
-        return codeText;
-      }
+    const longestCodeText = getLongestCodeText(clone, 'pre code');
+    if (longestCodeText.length > 10 && !isThinkingOnlyText(longestCodeText)) {
+      return longestCodeText;
     }
 
     const text = (clone.innerText || clone.textContent || '').trim();

@@ -16,6 +16,15 @@ function getVisibleElementText(element) {
 }
 
 function isVisible(element) {
+  if (!element || !element.isConnected) {
+    return false;
+  }
+  if (typeof element.checkVisibility === "function") {
+    return element.checkVisibility({
+      checkOpacity: false,
+      checkVisibilityCSS: true,
+    });
+  }
   const rect = element.getBoundingClientRect();
   const style = window.getComputedStyle(element);
 
@@ -25,6 +34,20 @@ function isVisible(element) {
     style.display !== "none" &&
     style.visibility !== "hidden"
   );
+}
+
+// Returns the text of the longest matching code block, trimmed. Single pass:
+// sorting would re-read every block's text on each comparison.
+function getLongestCodeText(root, selector = "pre code") {
+  const blocks = root?.querySelectorAll?.(selector) || [];
+  let longest = "";
+  for (let i = 0; i < blocks.length; i += 1) {
+    const text = getElementText(blocks[i]).trim();
+    if (text.length > longest.length) {
+      longest = text;
+    }
+  }
+  return longest;
 }
 
 async function waitForElement(finder, timeoutMs) {
@@ -49,6 +72,7 @@ globalThis.ChatDistiller = globalThis.ChatDistiller || {};
 globalThis.ChatDistiller.dom = {
   getElementText,
   getVisibleElementText,
+  getLongestCodeText,
   isVisible,
   waitForElement,
   sleep,

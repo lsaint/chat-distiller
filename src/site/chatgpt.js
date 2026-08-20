@@ -3,7 +3,7 @@
   // Registered as globalThis.ChatDistiller.adapter for the core engine to consume.
 
   const { t } = globalThis.ChatDistillerI18n;
-  const { getElementText, isVisible, sleep } = globalThis.ChatDistiller.dom;
+  const { getElementText, getLongestCodeText, isVisible, sleep } = globalThis.ChatDistiller.dom;
   const { isThinkingOnlyText } = globalThis.ChatDistiller.editor;
   const { CARD_ATTRIBUTE } = globalThis.ChatDistiller.cardUi;
   const MAX_DOWNLOAD_BYTES = 2_000_000;
@@ -63,21 +63,9 @@
   }
 
   function getAssistantMessages() {
-    const selectors = [
-      '[data-message-author-role="assistant"]',
-      'article[data-testid^="conversation-turn-"] [data-message-author-role="assistant"]',
-    ];
-
-    const elements = [];
-    for (const selector of selectors) {
-      for (const element of document.querySelectorAll(selector)) {
-        if (!elements.includes(element)) {
-          elements.push(element);
-        }
-      }
-    }
-
-    return elements;
+    const selector =
+      '[data-message-author-role="assistant"], article[data-testid^="conversation-turn-"] [data-message-author-role="assistant"]';
+    return Array.from(new Set(document.querySelectorAll(selector)));
   }
 
   function getUserMessages() {
@@ -90,19 +78,23 @@
     return node.closest('[data-message-author-role="assistant"]');
   }
 
-  function isGenerationActive() {
-    const selectors = [
-      '[data-testid="stop-button"]',
-      'button[aria-label*="Stop"]',
-      'button[aria-label*="停止"]',
-      'button[aria-label*="Interrupt"]',
-      'button[aria-label*="中断"]',
-      'button[data-testid*="stop"]',
-    ];
+  const STOP_BUTTON_SELECTOR = [
+    '[data-testid="stop-button"]',
+    'button[aria-label*="Stop"]',
+    'button[aria-label*="停止"]',
+    'button[aria-label*="Interrupt"]',
+    'button[aria-label*="中断"]',
+    'button[data-testid*="stop"]',
+  ].join(", ");
 
-    return selectors.some((selector) =>
-      Array.from(document.querySelectorAll(selector)).some(isVisible),
-    );
+  function isGenerationActive() {
+    const buttons = document.querySelectorAll(STOP_BUTTON_SELECTOR);
+    for (let i = 0; i < buttons.length; i += 1) {
+      if (isVisible(buttons[i])) {
+        return true;
+      }
+    }
+    return false;
   }
 
   function hasResponseActions(el) {
@@ -252,18 +244,9 @@
     }
 
     // 4. Look for Markdown code blocks inside the cleaned message, select longest
-    const codeBlocks = Array.from(clone.querySelectorAll("pre code"));
-    if (codeBlocks.length > 0) {
-      codeBlocks.sort((a, b) => {
-        const lenA = getElementText(a).trim().length;
-        const lenB = getElementText(b).trim().length;
-        return lenB - lenA;
-      });
-
-      const longestCodeText = getElementText(codeBlocks[0]).trim();
-      if (longestCodeText.length > 10 && !isThinkingOnlyText(longestCodeText)) {
-        return longestCodeText;
-      }
+    const longestCodeText = getLongestCodeText(clone, "pre code");
+    if (longestCodeText.length > 10 && !isThinkingOnlyText(longestCodeText)) {
+      return longestCodeText;
     }
 
     // 5. Look for markdown response container in cleaned content
@@ -392,17 +375,9 @@
   function extractCanvasContent(panel) {
     if (!panel) return "";
 
-    const codeBlocks = Array.from(panel.querySelectorAll("pre code"));
-    if (codeBlocks.length > 0) {
-      codeBlocks.sort((a, b) => {
-        const lenA = getElementText(a).trim().length;
-        const lenB = getElementText(b).trim().length;
-        return lenB - lenA;
-      });
-      const codeText = getElementText(codeBlocks[0]).trim();
-      if (codeText.length > 20) {
-        return codeText;
-      }
+    const longestCodeText = getLongestCodeText(panel, "pre code");
+    if (longestCodeText.length > 20) {
+      return longestCodeText;
     }
 
     const editor =

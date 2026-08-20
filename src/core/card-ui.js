@@ -10,12 +10,16 @@ let resolveCardMountPoint = (el) => el;
 let resolveCollapseTarget = (el) => el;
 let resolvePromptTurn = null;
 let runTaskAction = null;
+let runCopyMarkdown = null;
+let runSaveAs = null;
 
 function configureCardUi(options = {}) {
   if (options.resolveCardMountPoint) resolveCardMountPoint = options.resolveCardMountPoint;
   if (options.resolveCollapseTarget) resolveCollapseTarget = options.resolveCollapseTarget;
   if (options.resolvePromptTurn) resolvePromptTurn = options.resolvePromptTurn;
   if (options.runTaskAction) runTaskAction = options.runTaskAction;
+  if (options.runCopyMarkdown) runCopyMarkdown = options.runCopyMarkdown;
+  if (options.runSaveAs) runSaveAs = options.runSaveAs;
 }
 
 function setMemoryTurnCollapsed(assistantElement, collapsed) {
@@ -43,6 +47,268 @@ function setMemoryTurnCollapseLocked(assistantElement, locked) {
   if (toggle) {
     toggle.disabled = locked;
   }
+}
+
+const SVG_NS = "http://www.w3.org/2000/svg";
+
+function createDoubleChevronSvg(direction) {
+  const svg = document.createElementNS(SVG_NS, "svg");
+  svg.setAttribute("viewBox", "0 0 24 24");
+  svg.setAttribute("width", "16");
+  svg.setAttribute("height", "16");
+  svg.setAttribute("fill", "none");
+  svg.setAttribute("stroke", "currentColor");
+  svg.setAttribute("stroke-width", "2");
+  svg.setAttribute("stroke-linecap", "round");
+  svg.setAttribute("stroke-linejoin", "round");
+  svg.setAttribute("aria-hidden", "true");
+
+  const path = document.createElementNS(SVG_NS, "path");
+  if (direction === "up") {
+    path.setAttribute("d", "M7 11L12 6L17 11 M7 18L12 13L17 18");
+  } else {
+    path.setAttribute("d", "M7 6L12 11L17 6 M7 13L12 18L17 13");
+  }
+  svg.append(path);
+  return svg;
+}
+
+function createCopySvg() {
+  const svg = document.createElementNS(SVG_NS, "svg");
+  svg.setAttribute("viewBox", "0 0 24 24");
+  svg.setAttribute("width", "16");
+  svg.setAttribute("height", "16");
+  svg.setAttribute("fill", "none");
+  svg.setAttribute("stroke", "currentColor");
+  svg.setAttribute("stroke-width", "2");
+  svg.setAttribute("stroke-linecap", "round");
+  svg.setAttribute("stroke-linejoin", "round");
+  svg.setAttribute("aria-hidden", "true");
+
+  const rect = document.createElementNS(SVG_NS, "rect");
+  rect.setAttribute("width", "14");
+  rect.setAttribute("height", "14");
+  rect.setAttribute("x", "8");
+  rect.setAttribute("y", "8");
+  rect.setAttribute("rx", "2");
+  rect.setAttribute("ry", "2");
+
+  const path = document.createElementNS(SVG_NS, "path");
+  path.setAttribute(
+    "d",
+    "M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2",
+  );
+
+  svg.append(rect, path);
+  return svg;
+}
+
+function createCheckSvg() {
+  const svg = document.createElementNS(SVG_NS, "svg");
+  svg.setAttribute("viewBox", "0 0 24 24");
+  svg.setAttribute("width", "16");
+  svg.setAttribute("height", "16");
+  svg.setAttribute("fill", "none");
+  svg.setAttribute("stroke", "currentColor");
+  svg.setAttribute("stroke-width", "2");
+  svg.setAttribute("stroke-linecap", "round");
+  svg.setAttribute("stroke-linejoin", "round");
+  svg.setAttribute("aria-hidden", "true");
+
+  const polyline = document.createElementNS(SVG_NS, "polyline");
+  polyline.setAttribute("points", "20 6 9 17 4 12");
+  svg.append(polyline);
+  return svg;
+}
+
+function createSaveAsSvg() {
+  const svg = document.createElementNS(SVG_NS, "svg");
+  svg.setAttribute("viewBox", "0 0 24 24");
+  svg.setAttribute("width", "16");
+  svg.setAttribute("height", "16");
+  svg.setAttribute("fill", "none");
+  svg.setAttribute("stroke", "currentColor");
+  svg.setAttribute("stroke-width", "2");
+  svg.setAttribute("stroke-linecap", "round");
+  svg.setAttribute("stroke-linejoin", "round");
+  svg.setAttribute("aria-hidden", "true");
+
+  const path = document.createElementNS(SVG_NS, "path");
+  path.setAttribute(
+    "d",
+    "M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z",
+  );
+  const polyline1 = document.createElementNS(SVG_NS, "polyline");
+  polyline1.setAttribute("points", "17 21 17 13 7 13 7 21");
+  const polyline2 = document.createElementNS(SVG_NS, "polyline");
+  polyline2.setAttribute("points", "7 3 7 8 15 8");
+
+  svg.append(path, polyline1, polyline2);
+  return svg;
+}
+
+function updateCollapseToggle(toggle, isCollapsed) {
+  if (!toggle) {
+    return;
+  }
+  const label = isCollapsed ? t("expandContent") : t("collapseContent");
+  toggle.dataset.tooltip = label;
+  toggle.setAttribute("aria-label", label);
+  toggle.removeAttribute("title");
+  toggle.replaceChildren(createDoubleChevronSvg(isCollapsed ? "up" : "down"));
+}
+
+function createIconButton({ role, tooltip, svg, onClick }) {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.dataset.role = role;
+  button.className = "chat-distiller-icon-button";
+  if (tooltip) {
+    button.dataset.tooltip = tooltip;
+    button.setAttribute("aria-label", tooltip);
+  }
+  if (svg) {
+    button.append(svg);
+  }
+  if (onClick) {
+    button.addEventListener("click", async (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      await onClick(event, button);
+    });
+  }
+  return button;
+}
+
+function flashButtonState(
+  btn,
+  { tooltip, svg, revertTooltip, revertSvg, delay = 1500 },
+) {
+  btn.dataset.tooltip = tooltip;
+  btn.setAttribute("aria-label", tooltip);
+  if (svg) {
+    btn.replaceChildren(svg);
+  }
+  clearTimeout(btn._resetTimer);
+  btn._resetTimer = setTimeout(() => {
+    btn.dataset.tooltip = revertTooltip;
+    btn.setAttribute("aria-label", revertTooltip);
+    if (revertSvg) {
+      btn.replaceChildren(revertSvg());
+    }
+  }, delay);
+}
+
+function createCopyMarkdownButton(card, element) {
+  const button = createIconButton({
+    role: "copy-markdown",
+    tooltip: t("copyMarkdown"),
+    svg: createCopySvg(),
+    onClick: async (_event, btn) => {
+      if (!runCopyMarkdown) return;
+      try {
+        const res = await runCopyMarkdown(card.chatDistillerTask, element);
+        if (res?.ok) {
+          flashButtonState(btn, {
+            tooltip: t("copied"),
+            svg: createCheckSvg(),
+            revertTooltip: t("copyMarkdown"),
+            revertSvg: createCopySvg,
+            delay: 1500,
+          });
+        } else {
+          flashButtonState(btn, {
+            tooltip: res?.error || t("taskError"),
+            revertTooltip: t("copyMarkdown"),
+            delay: 2500,
+          });
+        }
+      } catch (err) {
+        flashButtonState(btn, {
+          tooltip: err?.message || t("taskError"),
+          revertTooltip: t("copyMarkdown"),
+          delay: 2500,
+        });
+      }
+    },
+  });
+  button.hidden = true;
+  return button;
+}
+
+function createSaveAsButton(card, element) {
+  const button = createIconButton({
+    role: "save-as",
+    tooltip: t("saveAs"),
+    svg: createSaveAsSvg(),
+    onClick: async (_event, btn) => {
+      if (!runSaveAs) return;
+      try {
+        const res = await runSaveAs(card.chatDistillerTask, element);
+        if (res?.ok) {
+          flashButtonState(btn, {
+            tooltip: t("savedAs"),
+            svg: createCheckSvg(),
+            revertTooltip: t("saveAs"),
+            revertSvg: createSaveAsSvg,
+            delay: 1500,
+          });
+        } else if (!res?.cancelled) {
+          flashButtonState(btn, {
+            tooltip: res?.error || t("taskError"),
+            revertTooltip: t("saveAs"),
+            delay: 2500,
+          });
+        }
+      } catch (err) {
+        flashButtonState(btn, {
+          tooltip: err?.message || t("taskError"),
+          revertTooltip: t("saveAs"),
+          delay: 2500,
+        });
+      }
+    },
+  });
+  button.hidden = true;
+  return button;
+}
+
+function createCollapseToggleButton(element, collapseTarget) {
+  const button = createIconButton({
+    role: "collapse-toggle",
+    onClick: () => {
+      const isCollapsed =
+        collapseTarget.getAttribute(COLLAPSED_ATTRIBUTE) !== "false";
+      setMemoryTurnCollapsed(element, !isCollapsed);
+      updateCollapseToggle(button, !isCollapsed);
+    },
+  });
+  updateCollapseToggle(
+    button,
+    collapseTarget.getAttribute(COLLAPSED_ATTRIBUTE) !== "false",
+  );
+  return button;
+}
+
+function createTaskActionButton(card) {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.dataset.role = "task-action";
+  button.hidden = true;
+  button.addEventListener("click", async (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (!runTaskAction || !card.chatDistillerTask) {
+      return;
+    }
+    button.disabled = true;
+    try {
+      await runTaskAction(card.chatDistillerTask);
+    } finally {
+      button.disabled = false;
+    }
+  });
+  return button;
 }
 
 function getBrandIconUrl() {
@@ -87,62 +353,17 @@ function ensureMemoryCard(element, jobId, task = {}) {
     status.textContent = t("generatingMemory");
     statusGroup.append(status);
 
-    const toggle = document.createElement("button");
-    toggle.type = "button";
-    toggle.dataset.role = "collapse-toggle";
-    toggle.textContent = collapseTarget.getAttribute(COLLAPSED_ATTRIBUTE) === "false"
-      ? t("collapseContent")
-      : t("expandContent");
-    toggle.addEventListener("click", (event) => {
-      event.preventDefault();
-      event.stopPropagation();
-      const isCollapsed = collapseTarget.getAttribute(COLLAPSED_ATTRIBUTE) !== "false";
-      setMemoryTurnCollapsed(element, !isCollapsed);
-      toggle.textContent = isCollapsed
-        ? t("collapseContent")
-        : t("expandContent");
-    });
+    const actionsGroup = document.createElement("div");
+    actionsGroup.className = "chat-distiller-card-actions";
+    actionsGroup.append(
+      createTaskActionButton(card),
+      createCopyMarkdownButton(card, element),
+      createSaveAsButton(card, element),
+      createCollapseToggleButton(element, collapseTarget),
+    );
 
-    const taskAction = document.createElement("button");
-    taskAction.type = "button";
-    taskAction.dataset.role = "task-action";
-    taskAction.hidden = true;
-    taskAction.addEventListener("click", async (event) => {
-      event.preventDefault();
-      event.stopPropagation();
-      if (!runTaskAction || !card.chatDistillerTask) {
-        return;
-      }
-      taskAction.disabled = true;
-      try {
-        await runTaskAction(card.chatDistillerTask);
-      } finally {
-        taskAction.disabled = false;
-      }
-    });
-
-    card.append(statusGroup, taskAction, toggle);
+    card.append(statusGroup, actionsGroup);
     mountPoint.append(card);
-  } else {
-    let statusGroup = card.querySelector(".chat-distiller-card-header");
-    const status = card.querySelector('[data-role="status"]');
-    if (!statusGroup && status) {
-      statusGroup = document.createElement("div");
-      statusGroup.className = "chat-distiller-card-header";
-      status.before(statusGroup);
-      statusGroup.append(status);
-    }
-    if (statusGroup && !statusGroup.querySelector(".chat-distiller-brand-icon")) {
-      const iconUrl = getBrandIconUrl();
-      if (iconUrl) {
-        const brandIcon = document.createElement("img");
-        brandIcon.className = "chat-distiller-brand-icon";
-        brandIcon.src = iconUrl;
-        brandIcon.alt = "Chat Distiller";
-        brandIcon.setAttribute("aria-hidden", "true");
-        statusGroup.prepend(brandIcon);
-      }
-    }
   }
 
   if (jobId && jobId !== "restored") {
@@ -164,10 +385,10 @@ function ensureMemoryCard(element, jobId, task = {}) {
   }
   const toggle = card.querySelector('[data-role="collapse-toggle"]');
   if (toggle) {
-    toggle.textContent =
-      collapseTarget.getAttribute(COLLAPSED_ATTRIBUTE) === "false"
-        ? t("collapseContent")
-        : t("expandContent");
+    updateCollapseToggle(
+      toggle,
+      collapseTarget.getAttribute(COLLAPSED_ATTRIBUTE) !== "false"
+    );
     toggle.disabled = task.collapseLocked === true;
   }
   applyCardState(card, task);
@@ -222,6 +443,22 @@ function applyCardState(card, task) {
       taskAction.textContent = t("retrySaveCard");
     }
   }
+
+  const isGenerating = !task.status || task.status === "generating" || task.status === "saving";
+  const hasMemoryToSave =
+    task.status === "success" ||
+    task.canRetrySave ||
+    Boolean(task.result?.content);
+
+  const copyMarkdown = card.querySelector('[data-role="copy-markdown"]');
+  if (copyMarkdown) {
+    copyMarkdown.hidden = isGenerating || !hasMemoryToSave;
+  }
+
+  const saveAs = card.querySelector('[data-role="save-as"]');
+  if (saveAs) {
+    saveAs.hidden = isGenerating || !hasMemoryToSave;
+  }
 }
 
 function injectCardStyles() {
@@ -257,6 +494,12 @@ function injectCardStyles() {
       align-items: center;
       min-width: 0;
     }
+    [${CARD_ATTRIBUTE}] .chat-distiller-card-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
     [${CARD_ATTRIBUTE}] .chat-distiller-brand-icon {
       width: 18px;
       height: 18px;
@@ -282,6 +525,48 @@ function injectCardStyles() {
       cursor: pointer;
       font: inherit;
       font-size: 12px;
+    }
+    [${CARD_ATTRIBUTE}] .chat-distiller-icon-button,
+    [${CARD_ATTRIBUTE}] [data-role="collapse-toggle"],
+    [${CARD_ATTRIBUTE}] [data-role="copy-markdown"],
+    [${CARD_ATTRIBUTE}] [data-role="save-as"] {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px;
+      width: 24px;
+      height: 24px;
+      box-sizing: border-box;
+    }
+    [${CARD_ATTRIBUTE}] .chat-distiller-icon-button svg,
+    [${CARD_ATTRIBUTE}] [data-role="collapse-toggle"] svg,
+    [${CARD_ATTRIBUTE}] [data-role="copy-markdown"] svg,
+    [${CARD_ATTRIBUTE}] [data-role="save-as"] svg {
+      width: 16px;
+      height: 16px;
+      display: block;
+      flex-shrink: 0;
+    }
+    [${CARD_ATTRIBUTE}] [data-tooltip] {
+      position: relative;
+    }
+    [${CARD_ATTRIBUTE}] [data-tooltip]:hover::after,
+    [${CARD_ATTRIBUTE}] [data-tooltip]:focus-visible::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      z-index: 1000;
+      right: 0;
+      bottom: calc(100% + 6px);
+      padding: 6px 8px;
+      border-radius: 5px;
+      color: #ffffff;
+      background: #3c4043;
+      font-size: 12px;
+      font-weight: normal;
+      line-height: 1.3;
+      white-space: nowrap;
+      pointer-events: none;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.24);
     }
   `;
   document.documentElement.append(style);

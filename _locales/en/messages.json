@@ -223,5 +223,9 @@
   "taskCancelled": { "message": "Task cancelled." },
   "saveTimeout": {
     "message": "Timed out saving to local directory. Please retry."
-  }
+  },
+  "copyMarkdown": { "message": "Copy Markdown" },
+  "copied": { "message": "Copied!" },
+  "saveAs": { "message": "Save as…" },
+  "savedAs": { "message": "Saved!" }
 }

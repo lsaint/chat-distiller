@@ -161,5 +161,9 @@
   "openSettingsFailed": { "message": "无法打开侧边栏。" },
   "cancelTask": { "message": "取消任务" },
   "taskCancelled": { "message": "任务已取消。" },
-  "saveTimeout": { "message": "保存到本地目录超时，请重试。" }
+  "saveTimeout": { "message": "保存到本地目录超时，请重试。" },
+  "copyMarkdown": { "message": "复制 Markdown" },
+  "copied": { "message": "已复制" },
+  "saveAs": { "message": "另存为…" },
+  "savedAs": { "message": "已保存" }
 }

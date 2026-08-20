@@ -56,6 +56,39 @@
     return String(value).replace(/\s+/g, " ").trim();
   }
 
+  function normalizeMarkdown(content) {
+    let normalized = String(content || "").trim();
+    const fencedDocument = normalized.match(
+      /^\s*(`{3,})[ \t]*(?:markdown|md)?[ \t]*\r?\n([\s\S]*?)\r?\n[ \t]*\1[ \t]*$/i
+    );
+    if (fencedDocument) {
+      normalized = fencedDocument[2];
+    }
+    normalized = normalized.replace(
+      /^\s*<!--\s*chat-distiller:v1\s*-->\s*(?:\r?\n)?/i,
+      ""
+    );
+    normalized = normalized.replace(
+      /^\s*<!--\s*filename:\s*[a-z0-9]+(?:-[a-z0-9]+)*\.md\s*-->\s*(?:\r?\n)?/i,
+      ""
+    );
+    normalized = normalized.replace(
+      /(?:\r?\n)?\s*<!--\s*\/chat-distiller:v1\s*-->\s*$/i,
+      ""
+    );
+    const protocolSuffixKeywords = [
+      "The following output protocol has the highest priority",
+      "以下输出协议优先级最高，必须严格遵守",
+    ];
+    for (const kw of protocolSuffixKeywords) {
+      const idx = normalized.indexOf(kw);
+      if (idx !== -1) {
+        normalized = normalized.slice(0, idx);
+      }
+    }
+    return normalized.trim() + "\n";
+  }
+
   globalThis.ChatDistiller = globalThis.ChatDistiller || {};
   globalThis.ChatDistiller.protocol = {
     MEMORY_PROTOCOL_MARKER,
@@ -64,6 +97,7 @@
     isProtocolContentComplete,
     extractProtocolFilename,
     stripProtocolMarker,
+    normalizeMarkdown,
     normalizeRenderedPromptText,
     normalizeComparableText,
   };

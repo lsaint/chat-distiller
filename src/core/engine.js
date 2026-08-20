@@ -9,6 +9,7 @@
     isProtocolContentComplete,
     extractProtocolFilename,
     stripProtocolMarker,
+    normalizeMarkdown,
     normalizeRenderedPromptText,
   } = globalThis.ChatDistiller.protocol;
   const { getElementText, getVisibleElementText, waitForElement, sleep } =
@@ -30,6 +31,8 @@
     resolveCollapseTarget: (el) => adapter.getCollapseTarget(el),
     resolvePromptTurn: (el) => adapter.getPromptCollapseTarget(el),
     runTaskAction: handleCardTaskAction,
+    runCopyMarkdown: handleCopyMarkdown,
+    runSaveAs: handleSaveAs,
   });
 
   // ---- Extraction state ----
@@ -176,6 +179,109 @@
     }
   }
 
+  async function handleCopyMarkdown(task, element) {
+    let markdown = "";
+
+    if (task?.result?.content) {
+      markdown = task.result.content;
+    } else if (element) {
+      const protocolContent = readProtocolContent(element);
+      if (protocolContent) {
+        markdown = protocolContent;
+      }
+    }
+
+    if (!markdown) {
+      return { ok: false, error: t("markdownMissing") };
+    }
+
+    markdown = normalizeMarkdown(markdown);
+
+    try {
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(markdown);
+      } else {
+        const textarea = document.createElement("textarea");
+        textarea.value = markdown;
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+        document.body.append(textarea);
+        textarea.select();
+        document.execCommand("copy");
+        textarea.remove();
+      }
+      return { ok: true };
+    } catch (error) {
+      console.warn("Copy markdown failed:", error);
+      return { ok: false, error: normalizeError(error) || t("taskError") };
+    }
+  }
+
+  async function handleSaveAs(task, element) {
+    let markdown = "";
+    let filename = "";
+
+    if (task?.result?.content) {
+      markdown = task.result.content;
+      filename = task.result.filename || "";
+    } else if (element) {
+      const protocolContent = readProtocolContent(element);
+      if (protocolContent) {
+        markdown = protocolContent;
+        filename = extractProtocolFilename(protocolContent);
+      }
+    }
+
+    if (!markdown) {
+      return { ok: false, error: t("markdownMissing") };
+    }
+
+    markdown = normalizeMarkdown(markdown);
+
+    if (!filename) {
+      filename = "distilled-memory.md";
+    }
+    if (!filename.toLowerCase().endsWith(".md")) {
+      filename += ".md";
+    }
+
+    try {
+      if (typeof window.showSaveFilePicker === "function") {
+        const handle = await window.showSaveFilePicker({
+          suggestedName: filename,
+          types: [
+            {
+              description: "Markdown",
+              accept: {
+                "text/markdown": [".md"],
+              },
+            },
+          ],
+        });
+        const writable = await handle.createWritable();
+        await writable.write(markdown);
+        await writable.close();
+      } else {
+        const blob = new Blob([markdown], {
+          type: "text/markdown;charset=utf-8",
+        });
+        const url = URL.createObjectURL(blob);
+        const anchor = document.createElement("a");
+        anchor.href = url;
+        anchor.download = filename;
+        anchor.click();
+        URL.revokeObjectURL(url);
+      }
+      return { ok: true };
+    } catch (error) {
+      if (error?.name === "AbortError") {
+        return { ok: false, cancelled: true };
+      }
+      console.warn("Save as failed:", error);
+      return { ok: false, error: normalizeError(error) || t("taskError") };
+    }
+  }
+
   // ---- Main extraction flow ----
   async function extractConversationMemory(config = {}, runId) {
     assertActiveRun(runId);
@@ -242,7 +348,7 @@
         setPromptTurnCollapsed(latest, true);
         return;
       }
-      await sleep(50);
+      await sleep(150);
     }
   }
 
@@ -603,11 +709,10 @@
         });
       }
 
-      const currentText = current
-        ? await extractMessageTextWithProtocol(current)
-        : "";
+      const { currentText, rawText } = current
+        ? await extractAssistantPollTexts(current)
+        : { currentText: "", rawText: "" };
       assertActiveRun(runId);
-      const rawText = current ? extractRawMessageText(current) : "";
       const now = Date.now();
       // A complete protocol on the resolved job target is authoritative for
       // convergence even when a site leaves its busy/stop UI stale. Keep the
@@ -703,30 +808,49 @@
     return null;
   }
 
-  // Protocol-first extraction: core handles protocol detection, then delegates to adapter.
-  async function extractMessageTextWithProtocol(element) {
-    if (!element) {
-      return "";
+  // Reads a turn's text without cloning it. Cards are the only nodes the extension
+  // injects, and every adapter mounts them as direct children of the turn
+  // (getCardMountPoint is identity), so skipping those children is enough to get
+  // the model's own output. Mirrors getElementText's CodeMirror handling.
+  function readTurnTextWithoutCards(element) {
+    const codeMirrorLines = element.querySelectorAll(".cm-line");
+    if (codeMirrorLines.length > 0) {
+      return Array.from(codeMirrorLines, (line) => line.textContent || "")
+        .join("\n")
+        .trim();
     }
+
+    let text = "";
+    for (const node of element.childNodes) {
+      if (node instanceof Element && node.hasAttribute(CARD_ATTRIBUTE)) {
+        continue;
+      }
+      text += node.textContent || "";
+    }
+    return text.trim();
+  }
+
+  // Protocol-first extraction: core handles protocol detection, then delegates to
+  // adapter. Both reads take the live element — adapters need it to reach the page
+  // (e.g. clicking ChatGPT's Canvas button) and each does its own scoped clone, so
+  // this costs one clone per poll tick instead of two.
+  async function extractAssistantPollTexts(element) {
+    if (!element) {
+      return { currentText: "", rawText: "" };
+    }
+
+    const rawText = readTurnTextWithoutCards(element);
 
     const protocolContent = readProtocolContent(element);
     if (protocolContent) {
-      return isProtocolContentComplete(protocolContent) ? protocolContent : "";
+      const currentText = isProtocolContentComplete(protocolContent)
+        ? protocolContent
+        : "";
+      return { currentText, rawText };
     }
 
-    return adapter.extractMessageText(element);
-  }
-
-  function extractRawMessageText(element) {
-    if (!element) {
-      return "";
-    }
-
-    const clone = element.cloneNode(true);
-    clone
-      .querySelectorAll(`[${CARD_ATTRIBUTE}]`)
-      .forEach((node) => node.remove());
-    return getElementText(clone).trim();
+    const currentText = await adapter.extractMessageText(element);
+    return { currentText, rawText };
   }
 
   // Never finalize while the AI is still generating. Response action buttons can
@@ -935,11 +1059,29 @@
   function observeProtocolMessages() {
     const protocolSelector = adapter.protocolBlockSelector || "pre code, pre";
 
+    const scanElement = (root) => {
+      if (!root || !(root instanceof Element)) {
+        return;
+      }
+      if (root.hasAttribute(CARD_ATTRIBUTE) || root.closest(`[${CARD_ATTRIBUTE}]`)) {
+        return;
+      }
+      injectCardStyles();
+      if (root.matches(protocolSelector)) {
+        collapseProtocolMessage(root);
+      }
+      const matching = root.querySelectorAll(protocolSelector);
+      for (let i = 0; i < matching.length; i += 1) {
+        collapseProtocolMessage(matching[i]);
+      }
+    };
+
     const scanAll = () => {
       injectCardStyles();
-      document
-        .querySelectorAll(protocolSelector)
-        .forEach(collapseProtocolMessage);
+      const all = document.querySelectorAll(protocolSelector);
+      for (let i = 0; i < all.length; i += 1) {
+        collapseProtocolMessage(all[i]);
+      }
     };
 
     scanAll();
@@ -947,43 +1089,45 @@
     const observer = new MutationObserver((records) => {
       queueProtocolResultDelivery();
 
-      let shouldScan = false;
-      for (const record of records) {
+      for (let i = 0; i < records.length; i += 1) {
+        const record = records[i];
+        const target = record.target;
+
+        if (
+          (target instanceof Element && target.closest(`[${CARD_ATTRIBUTE}]`)) ||
+          (target.parentElement && target.parentElement.closest(`[${CARD_ATTRIBUTE}]`))
+        ) {
+          continue;
+        }
+
         if (record.type === "characterData") {
-          const codeBlock =
-            record.target.parentElement?.closest(protocolSelector);
+          const codeBlock = target.parentElement?.closest(protocolSelector);
           if (codeBlock) {
             collapseProtocolMessage(codeBlock);
-          } else {
-            shouldScan = true;
           }
           continue;
         }
 
-        for (const node of record.addedNodes) {
-          if (node instanceof Text) {
-            const codeBlock = node.parentElement?.closest(protocolSelector);
-            if (codeBlock) {
-              collapseProtocolMessage(codeBlock);
+        if (record.type === "childList") {
+          const added = record.addedNodes;
+          for (let j = 0; j < added.length; j += 1) {
+            const node = added[j];
+            if (node instanceof Text) {
+              const codeBlock = node.parentElement?.closest(protocolSelector);
+              if (codeBlock) {
+                collapseProtocolMessage(codeBlock);
+              }
+              continue;
             }
-            continue;
-          }
-          if (!(node instanceof Element)) {
-            continue;
-          }
-          if (node.matches(protocolSelector)) {
-            collapseProtocolMessage(node);
-          }
-          if (node.querySelectorAll?.(protocolSelector).length > 0) {
-            shouldScan = true;
-          } else {
-            shouldScan = true;
+            if (!(node instanceof Element)) {
+              continue;
+            }
+            if (node.hasAttribute(CARD_ATTRIBUTE) || node.closest(`[${CARD_ATTRIBUTE}]`)) {
+              continue;
+            }
+            scanElement(node);
           }
         }
-      }
-
-      if (shouldScan) {
-        scanAll();
       }
     });
 

@@ -1,6 +1,13 @@
 (() => {
 const { t } = globalThis.ChatDistillerI18n;
 function getElementText(element) {
+  const codeMirrorLines = element?.querySelectorAll?.(".cm-line") || [];
+  if (codeMirrorLines.length > 0) {
+    return Array.from(codeMirrorLines, (line) => line.textContent || "").join(
+      "\n",
+    );
+  }
+
   return element?.textContent || element?.innerText || "";
 }
 

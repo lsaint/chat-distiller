@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.7.1] - 2026-08-20
+
+### Fixed
+
+- Track generated-character progress when Codex renders Markdown in a
+  CodeMirror document.
+- Preserve Markdown line breaks when extracting Codex CodeMirror output.
+
 ## [1.7.0] - 2026-08-18
 
 ### Added
@@ -158,7 +166,8 @@ All notable changes to this project will be documented in this file.
 - Distribute the same deterministic extension ZIP through the Chrome Web Store
   submission process and GitHub Releases.
 
-[Unreleased]: https://github.com/lsaint/chat-distiller/compare/v1.7.0...HEAD
+[Unreleased]: https://github.com/lsaint/chat-distiller/compare/v1.7.1...HEAD
+[1.7.1]: https://github.com/lsaint/chat-distiller/compare/v1.7.0...v1.7.1
 [1.7.0]: https://github.com/lsaint/chat-distiller/compare/v1.6.0...v1.7.0
 [1.6.0]: https://github.com/lsaint/chat-distiller/compare/v1.5.1...v1.6.0
 [1.5.1]: https://github.com/lsaint/chat-distiller/compare/v1.5.0...v1.5.1

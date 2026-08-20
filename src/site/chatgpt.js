@@ -423,6 +423,7 @@
 
   globalThis.ChatDistiller.registerAdapter({
     siteId: "chatgpt",
+    protocolBlockSelector: "pre code, .cm-content",
 
     // Input
     findPromptEditor,

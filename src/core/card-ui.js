@@ -293,28 +293,58 @@ function createPreviewButton(card, element) {
   expand.type = "button";
   expand.dataset.role = "expand-preview";
   expand.textContent = t("expandPreview");
-  expand.addEventListener("click", (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    const expanded = popover.dataset.expanded === "true";
-    popover.dataset.expanded = String(!expanded);
-    expand.textContent = expanded ? t("expandPreview") : t("closePreview");
-    if (expanded) expand.focus({ preventScroll: true });
-  });
   popover.append(content, expand);
-  control.append(button, popover);
 
-  const refresh = () => {
+  const modal = document.createElement("dialog");
+  modal.className = "chat-distiller-modal-preview";
+  const modalContent = document.createElement("pre");
+  modalContent.dataset.role = "modal-preview-content";
+  modalContent.tabIndex = 0;
+  const modalClose = document.createElement("button");
+  modalClose.type = "button";
+  modalClose.dataset.role = "close-modal";
+  modalClose.textContent = t("closePreview");
+  modal.append(modalContent, modalClose);
+
+  control.append(button, popover, modal);
+
+  const getMarkdown = () => {
     const markdown = getMarkdownDocument?.(card.chatDistillerTask, element);
-    content.textContent = markdown?.content || t("markdownMissing");
+    return markdown?.content || t("markdownMissing");
   };
+
+  const refreshPopover = () => {
+    content.textContent = getMarkdown();
+  };
+
+  const refreshModal = () => {
+    modalContent.textContent = getMarkdown();
+    modalContent.scrollTop = 0;
+  };
+
   enableTransientScrollbar(content);
   enableTransientScrollbar(popover);
-  const closePreview = ({ restoreFocus = false } = {}) => {
+  enableTransientScrollbar(modalContent);
+
+  let closingEntirely = false;
+
+  const closeHoverPopover = () => {
     clearTimeout(control._closeTimer);
     control.classList.remove("is-open");
-    delete popover.dataset.expanded;
-    expand.textContent = t("expandPreview");
+  };
+
+  const closeModal = () => {
+    if (modal.open) {
+      if (typeof modal.close === "function") modal.close();
+      else modal.removeAttribute("open");
+    }
+  };
+
+  const closePreview = ({ restoreFocus = false } = {}) => {
+    closingEntirely = true;
+    closeHoverPopover();
+    closeModal();
+    closingEntirely = false;
     if (closeActivePreview === closePreview) {
       closeActivePreview = null;
     }
@@ -323,7 +353,53 @@ function createPreviewButton(card, element) {
       button.focus({ preventScroll: true });
     }
   };
+
+  expand.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    closeHoverPopover();
+    refreshModal();
+    closeActivePreview = closePreview;
+    if (typeof modal.showModal === "function") {
+      modal.showModal();
+    } else {
+      modal.setAttribute("open", "");
+    }
+    modalClose.focus({ preventScroll: true });
+  });
+
+  modalClose.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    closeModal();
+  });
+
+  modal.addEventListener("click", (event) => {
+    if (event.target === modal) {
+      const rect = modal.getBoundingClientRect();
+      const inDialog =
+        rect.top <= event.clientY &&
+        event.clientY <= rect.bottom &&
+        rect.left <= event.clientX &&
+        event.clientX <= rect.right;
+      if (!inDialog) {
+        closeModal();
+      }
+    }
+  });
+
+  modal.addEventListener("close", () => {
+    if (closingEntirely) {
+      return;
+    }
+    showPreview();
+    expand.focus({ preventScroll: true });
+  });
+
   const showPreview = (event) => {
+    if (modal.open) {
+      return;
+    }
     if (event?.type === "focusin" && control._suppressFocusOpen) {
       control._suppressFocusOpen = false;
       return;
@@ -332,26 +408,29 @@ function createPreviewButton(card, element) {
       closeActivePreview();
     }
     clearTimeout(control._closeTimer);
-    refresh();
+    refreshPopover();
     control.classList.add("is-open");
     closeActivePreview = closePreview;
   };
+
   const hidePreview = () => {
     clearTimeout(control._closeTimer);
-    control._closeTimer = setTimeout(closePreview, 200);
+    control._closeTimer = setTimeout(closeHoverPopover, 200);
   };
+
   const handleMouseEnter = (event) => {
     if (document.activeElement === expand) expand.blur();
     showPreview(event);
   };
+
   control._closePreview = closePreview;
   control.addEventListener("mouseenter", handleMouseEnter);
   control.addEventListener("focusin", showPreview);
   control.addEventListener("focusout", (event) => {
-    if (!control.contains(event.relatedTarget)) hidePreview();
+    if (!control.contains(event.relatedTarget) && !modal.open) hidePreview();
   });
   control.addEventListener("mouseleave", () => {
-    if (!control.contains(document.activeElement)) hidePreview();
+    if (!modal.open && !control.contains(document.activeElement)) hidePreview();
   });
   return control;
 }
@@ -685,13 +764,6 @@ function injectCardStyles() {
     [${CARD_ATTRIBUTE}] .chat-distiller-preview-control.is-open .chat-distiller-markdown-preview {
       display: block;
     }
-    [${CARD_ATTRIBUTE}] .chat-distiller-markdown-preview[data-expanded="true"] {
-      position: fixed;
-      inset: 24px;
-      width: auto;
-      max-height: none;
-      overflow: auto;
-    }
     [${CARD_ATTRIBUTE}] .chat-distiller-markdown-preview pre {
       margin: 0 0 10px;
       max-height: 270px;
@@ -702,43 +774,97 @@ function injectCardStyles() {
       white-space: pre-wrap;
       overflow-wrap: anywhere;
     }
-    [${CARD_ATTRIBUTE}] .chat-distiller-markdown-preview,
-    [${CARD_ATTRIBUTE}] .chat-distiller-markdown-preview pre {
-      scrollbar-color: transparent transparent;
-      scrollbar-width: none;
-    }
-    [${CARD_ATTRIBUTE}] .chat-distiller-markdown-preview.is-scrolling,
-    [${CARD_ATTRIBUTE}] .chat-distiller-markdown-preview pre.is-scrolling {
-      scrollbar-color: rgba(255, 255, 255, 0.48) transparent;
-      scrollbar-width: thin;
-    }
-    [${CARD_ATTRIBUTE}] .chat-distiller-markdown-preview::-webkit-scrollbar,
-    [${CARD_ATTRIBUTE}] .chat-distiller-markdown-preview pre::-webkit-scrollbar {
-      width: 0;
-    }
-    [${CARD_ATTRIBUTE}] .chat-distiller-markdown-preview.is-scrolling::-webkit-scrollbar,
-    [${CARD_ATTRIBUTE}] .chat-distiller-markdown-preview pre.is-scrolling::-webkit-scrollbar {
-      width: 5px;
-    }
-    [${CARD_ATTRIBUTE}] .chat-distiller-markdown-preview::-webkit-scrollbar-track,
-    [${CARD_ATTRIBUTE}] .chat-distiller-markdown-preview pre::-webkit-scrollbar-track {
-      background: transparent;
-    }
-    [${CARD_ATTRIBUTE}] .chat-distiller-markdown-preview::-webkit-scrollbar-thumb,
-    [${CARD_ATTRIBUTE}] .chat-distiller-markdown-preview pre::-webkit-scrollbar-thumb {
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.48);
-    }
-    [${CARD_ATTRIBUTE}] .chat-distiller-markdown-preview[data-expanded="true"] pre {
-      max-height: none;
-      overflow: visible;
-    }
     [${CARD_ATTRIBUTE}] .chat-distiller-markdown-preview [data-role="expand-preview"] {
       width: 100%;
       height: auto;
       padding: 7px 10px;
       color: #202124;
       background: #f1f3f4;
+    }
+    dialog.chat-distiller-modal-preview {
+      position: fixed;
+      inset: 24px;
+      width: calc(100vw - 48px);
+      height: calc(100vh - 48px);
+      max-width: none;
+      max-height: none;
+      margin: 0;
+      padding: 14px 16px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 10px;
+      color: #f1f3f4;
+      background: #202124;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.48);
+      z-index: 2147483647;
+      text-align: left;
+    }
+    dialog.chat-distiller-modal-preview:not([open]) {
+      display: none !important;
+    }
+    dialog.chat-distiller-modal-preview::backdrop {
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(2px);
+    }
+    dialog.chat-distiller-modal-preview pre {
+      margin: 0 0 12px;
+      flex: 1;
+      min-height: 0;
+      overflow-x: hidden;
+      overflow-y: auto;
+      color: inherit;
+      font: 12px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+    dialog.chat-distiller-modal-preview [data-role="close-modal"] {
+      flex: none;
+      width: 100%;
+      height: auto;
+      padding: 8px 12px;
+      border: 0;
+      border-radius: 6px;
+      color: #202124;
+      background: #f1f3f4;
+      cursor: pointer;
+      font: inherit;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    [${CARD_ATTRIBUTE}] .chat-distiller-markdown-preview,
+    [${CARD_ATTRIBUTE}] .chat-distiller-markdown-preview pre,
+    dialog.chat-distiller-modal-preview pre {
+      scrollbar-color: transparent transparent;
+      scrollbar-width: none;
+    }
+    [${CARD_ATTRIBUTE}] .chat-distiller-markdown-preview.is-scrolling,
+    [${CARD_ATTRIBUTE}] .chat-distiller-markdown-preview pre.is-scrolling,
+    dialog.chat-distiller-modal-preview pre.is-scrolling {
+      scrollbar-color: rgba(255, 255, 255, 0.48) transparent;
+      scrollbar-width: thin;
+    }
+    [${CARD_ATTRIBUTE}] .chat-distiller-markdown-preview::-webkit-scrollbar,
+    [${CARD_ATTRIBUTE}] .chat-distiller-markdown-preview pre::-webkit-scrollbar,
+    dialog.chat-distiller-modal-preview pre::-webkit-scrollbar {
+      width: 0;
+    }
+    [${CARD_ATTRIBUTE}] .chat-distiller-markdown-preview.is-scrolling::-webkit-scrollbar,
+    [${CARD_ATTRIBUTE}] .chat-distiller-markdown-preview pre.is-scrolling::-webkit-scrollbar,
+    dialog.chat-distiller-modal-preview pre.is-scrolling::-webkit-scrollbar {
+      width: 5px;
+    }
+    [${CARD_ATTRIBUTE}] .chat-distiller-markdown-preview::-webkit-scrollbar-track,
+    [${CARD_ATTRIBUTE}] .chat-distiller-markdown-preview pre::-webkit-scrollbar-track,
+    dialog.chat-distiller-modal-preview pre::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    [${CARD_ATTRIBUTE}] .chat-distiller-markdown-preview::-webkit-scrollbar-thumb,
+    [${CARD_ATTRIBUTE}] .chat-distiller-markdown-preview pre::-webkit-scrollbar-thumb,
+    dialog.chat-distiller-modal-preview pre::-webkit-scrollbar-thumb {
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.48);
     }
     [${CARD_ATTRIBUTE}] [hidden] {
       display: none !important;

@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.9.1] - 2026-08-21
+
+### Fixed
+
+- Render full Markdown preview in a top-layer modal dialog to prevent layout overflow on DeepSeek and other contained message layouts.
+- Smoothly restore the small hover popover when closing the full preview modal.
+
 ## [1.9.0] - 2026-08-21
 
 ### Added
@@ -196,7 +203,8 @@ All notable changes to this project will be documented in this file.
 - Distribute the same deterministic extension ZIP through the Chrome Web Store
   submission process and GitHub Releases.
 
-[Unreleased]: https://github.com/lsaint/chat-distiller/compare/v1.9.0...HEAD
+[Unreleased]: https://github.com/lsaint/chat-distiller/compare/v1.9.1...HEAD
+[1.9.1]: https://github.com/lsaint/chat-distiller/compare/v1.9.0...v1.9.1
 [1.9.0]: https://github.com/lsaint/chat-distiller/compare/v1.8.0...v1.9.0
 [1.8.0]: https://github.com/lsaint/chat-distiller/compare/v1.7.2...v1.8.0
 [1.7.2]: https://github.com/lsaint/chat-distiller/compare/v1.7.1...v1.7.2

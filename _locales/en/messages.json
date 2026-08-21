@@ -168,8 +168,6 @@
   "invalidSubdirectory": { "message": "Invalid target subdirectory path." },
   "generatingMemory": { "message": "Generating Memory…" },
   "generatingMemoryChars": { "message": "Generating Memory… ($1 characters)" },
-  "collapseContent": { "message": "Collapse content" },
-  "expandContent": { "message": "Expand content" },
   "savingLocal": { "message": "Generation complete. Saving locally…" },
   "automaticSubmissionFailed": {
     "message": "$1 Automatic prompt submission failed. Please retry."
@@ -192,7 +190,7 @@
     "message": "The AI finished responding without a savable Markdown code block. Reset the default prompt and retry."
   },
   "contentCollapsed": {
-    "message": "The Memory prompt and response are collapsed. Expand them to view the content."
+    "message": "The Memory prompt and response are collapsed. You can preview the generated content."
   },
   "responseStartTimeout": {
     "message": "Timed out waiting for the AI to start responding."
@@ -227,5 +225,8 @@
   "copyMarkdown": { "message": "Copy Markdown" },
   "copied": { "message": "Copied!" },
   "saveAs": { "message": "Save as…" },
-  "savedAs": { "message": "Saved!" }
+  "savedAs": { "message": "Saved!" },
+  "previewMarkdown": { "message": "Preview Markdown" },
+  "expandPreview": { "message": "View full Markdown" },
+  "closePreview": { "message": "Close full preview" }
 }

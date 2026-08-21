@@ -31,6 +31,7 @@
     resolveCollapseTarget: (el) => adapter.getCollapseTarget(el),
     resolvePromptTurn: (el) => adapter.getPromptCollapseTarget(el),
     runTaskAction: handleCardTaskAction,
+    getMarkdownDocument: resolveMarkdownDocument,
     runCopyMarkdown: handleCopyMarkdown,
     runSaveAs: handleSaveAs,
   });
@@ -179,30 +180,31 @@
     }
   }
 
-  async function handleCopyMarkdown(task, element) {
-    let markdown = "";
-
-    if (task?.result?.content) {
-      markdown = task.result.content;
-    } else if (element) {
-      const protocolContent = readProtocolContent(element);
-      if (protocolContent) {
-        markdown = protocolContent;
-      }
+  function resolveMarkdownDocument(task, element) {
+    const protocolContent = element ? readProtocolContent(element) : "";
+    const content = task?.result?.content || protocolContent;
+    if (!content) {
+      return null;
     }
+    return {
+      content: normalizeMarkdown(content),
+      filename:
+        task?.result?.filename || extractProtocolFilename(protocolContent) || "",
+    };
+  }
 
-    if (!markdown) {
+  async function handleCopyMarkdown(task, element) {
+    const markdownDocument = resolveMarkdownDocument(task, element);
+    if (!markdownDocument) {
       return { ok: false, error: t("markdownMissing") };
     }
 
-    markdown = normalizeMarkdown(markdown);
-
     try {
       if (navigator?.clipboard?.writeText) {
-        await navigator.clipboard.writeText(markdown);
+        await navigator.clipboard.writeText(markdownDocument.content);
       } else {
         const textarea = document.createElement("textarea");
-        textarea.value = markdown;
+        textarea.value = markdownDocument.content;
         textarea.style.position = "fixed";
         textarea.style.opacity = "0";
         document.body.append(textarea);
@@ -218,26 +220,12 @@
   }
 
   async function handleSaveAs(task, element) {
-    let markdown = "";
-    let filename = "";
-
-    if (task?.result?.content) {
-      markdown = task.result.content;
-      filename = task.result.filename || "";
-    } else if (element) {
-      const protocolContent = readProtocolContent(element);
-      if (protocolContent) {
-        markdown = protocolContent;
-        filename = extractProtocolFilename(protocolContent);
-      }
-    }
-
-    if (!markdown) {
+    const markdownDocument = resolveMarkdownDocument(task, element);
+    if (!markdownDocument) {
       return { ok: false, error: t("markdownMissing") };
     }
-
-    markdown = normalizeMarkdown(markdown);
-
+    const markdown = markdownDocument.content;
+    let filename = markdownDocument.filename;
     if (!filename) {
       filename = "distilled-memory.md";
     }

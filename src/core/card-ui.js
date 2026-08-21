@@ -10,14 +10,25 @@ let resolveCardMountPoint = (el) => el;
 let resolveCollapseTarget = (el) => el;
 let resolvePromptTurn = null;
 let runTaskAction = null;
+let getMarkdownDocument = null;
 let runCopyMarkdown = null;
 let runSaveAs = null;
+let closeActivePreview = null;
+
+document.addEventListener("keydown", (event) => {
+  if (event.key !== "Escape" || !closeActivePreview) {
+    return;
+  }
+  event.preventDefault();
+  closeActivePreview({ restoreFocus: true });
+});
 
 function configureCardUi(options = {}) {
   if (options.resolveCardMountPoint) resolveCardMountPoint = options.resolveCardMountPoint;
   if (options.resolveCollapseTarget) resolveCollapseTarget = options.resolveCollapseTarget;
   if (options.resolvePromptTurn) resolvePromptTurn = options.resolvePromptTurn;
   if (options.runTaskAction) runTaskAction = options.runTaskAction;
+  if (options.getMarkdownDocument) getMarkdownDocument = options.getMarkdownDocument;
   if (options.runCopyMarkdown) runCopyMarkdown = options.runCopyMarkdown;
   if (options.runSaveAs) runSaveAs = options.runSaveAs;
 }
@@ -42,7 +53,7 @@ function setPromptTurnCollapsed(promptElement, collapsed) {
 function setMemoryTurnCollapseLocked(assistantElement, locked) {
   const mountPoint = resolveCardMountPoint(assistantElement);
   const toggle = mountPoint.querySelector(
-    `:scope > [${CARD_ATTRIBUTE}] [data-role="collapse-toggle"]`,
+    `:scope > [${CARD_ATTRIBUTE}] [data-role="preview-markdown"]`,
   );
   if (toggle) {
     toggle.disabled = locked;
@@ -51,7 +62,7 @@ function setMemoryTurnCollapseLocked(assistantElement, locked) {
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 
-function createDoubleChevronSvg(direction) {
+function createPreviewSvg() {
   const svg = document.createElementNS(SVG_NS, "svg");
   svg.setAttribute("viewBox", "0 0 24 24");
   svg.setAttribute("width", "16");
@@ -64,12 +75,12 @@ function createDoubleChevronSvg(direction) {
   svg.setAttribute("aria-hidden", "true");
 
   const path = document.createElementNS(SVG_NS, "path");
-  if (direction === "up") {
-    path.setAttribute("d", "M7 11L12 6L17 11 M7 18L12 13L17 18");
-  } else {
-    path.setAttribute("d", "M7 6L12 11L17 6 M7 13L12 18L17 13");
-  }
-  svg.append(path);
+  path.setAttribute("d", "M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z");
+  const circle = document.createElementNS(SVG_NS, "circle");
+  circle.setAttribute("cx", "12");
+  circle.setAttribute("cy", "12");
+  circle.setAttribute("r", "2.5");
+  svg.append(path, circle);
   return svg;
 }
 
@@ -145,17 +156,6 @@ function createSaveAsSvg() {
 
   svg.append(path, polyline1, polyline2);
   return svg;
-}
-
-function updateCollapseToggle(toggle, isCollapsed) {
-  if (!toggle) {
-    return;
-  }
-  const label = isCollapsed ? t("expandContent") : t("collapseContent");
-  toggle.dataset.tooltip = label;
-  toggle.setAttribute("aria-label", label);
-  toggle.removeAttribute("title");
-  toggle.replaceChildren(createDoubleChevronSvg(isCollapsed ? "up" : "down"));
 }
 
 function createIconButton({ role, tooltip, svg, onClick }) {
@@ -273,21 +273,97 @@ function createSaveAsButton(card, element) {
   return button;
 }
 
-function createCollapseToggleButton(element, collapseTarget) {
+function createPreviewButton(card, element) {
+  const control = document.createElement("div");
+  control.className = "chat-distiller-preview-control";
+  control.dataset.role = "preview-control";
+  control.hidden = true;
   const button = createIconButton({
-    role: "collapse-toggle",
-    onClick: () => {
-      const isCollapsed =
-        collapseTarget.getAttribute(COLLAPSED_ATTRIBUTE) !== "false";
-      setMemoryTurnCollapsed(element, !isCollapsed);
-      updateCollapseToggle(button, !isCollapsed);
-    },
+    role: "preview-markdown",
+    tooltip: t("previewMarkdown"),
+    svg: createPreviewSvg(),
   });
-  updateCollapseToggle(
-    button,
-    collapseTarget.getAttribute(COLLAPSED_ATTRIBUTE) !== "false",
-  );
-  return button;
+  const popover = document.createElement("div");
+  popover.className = "chat-distiller-markdown-preview";
+
+  const content = document.createElement("pre");
+  content.dataset.role = "preview-content";
+  content.tabIndex = 0;
+  const expand = document.createElement("button");
+  expand.type = "button";
+  expand.dataset.role = "expand-preview";
+  expand.textContent = t("expandPreview");
+  expand.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    const expanded = popover.dataset.expanded === "true";
+    popover.dataset.expanded = String(!expanded);
+    expand.textContent = expanded ? t("expandPreview") : t("closePreview");
+    if (expanded) expand.focus({ preventScroll: true });
+  });
+  popover.append(content, expand);
+  control.append(button, popover);
+
+  const refresh = () => {
+    const markdown = getMarkdownDocument?.(card.chatDistillerTask, element);
+    content.textContent = markdown?.content || t("markdownMissing");
+  };
+  enableTransientScrollbar(content);
+  enableTransientScrollbar(popover);
+  const closePreview = ({ restoreFocus = false } = {}) => {
+    clearTimeout(control._closeTimer);
+    control.classList.remove("is-open");
+    delete popover.dataset.expanded;
+    expand.textContent = t("expandPreview");
+    if (closeActivePreview === closePreview) {
+      closeActivePreview = null;
+    }
+    if (restoreFocus && document.activeElement !== button) {
+      control._suppressFocusOpen = true;
+      button.focus({ preventScroll: true });
+    }
+  };
+  const showPreview = (event) => {
+    if (event?.type === "focusin" && control._suppressFocusOpen) {
+      control._suppressFocusOpen = false;
+      return;
+    }
+    if (closeActivePreview && closeActivePreview !== closePreview) {
+      closeActivePreview();
+    }
+    clearTimeout(control._closeTimer);
+    refresh();
+    control.classList.add("is-open");
+    closeActivePreview = closePreview;
+  };
+  const hidePreview = () => {
+    clearTimeout(control._closeTimer);
+    control._closeTimer = setTimeout(closePreview, 200);
+  };
+  const handleMouseEnter = (event) => {
+    if (document.activeElement === expand) expand.blur();
+    showPreview(event);
+  };
+  control._closePreview = closePreview;
+  control.addEventListener("mouseenter", handleMouseEnter);
+  control.addEventListener("focusin", showPreview);
+  control.addEventListener("focusout", (event) => {
+    if (!control.contains(event.relatedTarget)) hidePreview();
+  });
+  control.addEventListener("mouseleave", () => {
+    if (!control.contains(document.activeElement)) hidePreview();
+  });
+  return control;
+}
+
+function enableTransientScrollbar(element) {
+  element.addEventListener("scroll", () => {
+    element.classList.add("is-scrolling");
+    clearTimeout(element._scrollbarTimer);
+    element._scrollbarTimer = setTimeout(() => {
+      element.classList.remove("is-scrolling");
+    }, 600);
+  });
 }
 
 function createTaskActionButton(card) {
@@ -357,9 +433,9 @@ function ensureMemoryCard(element, jobId, task = {}) {
     actionsGroup.className = "chat-distiller-card-actions";
     actionsGroup.append(
       createTaskActionButton(card),
+      createPreviewButton(card, element),
       createCopyMarkdownButton(card, element),
       createSaveAsButton(card, element),
-      createCollapseToggleButton(element, collapseTarget),
     );
 
     card.append(statusGroup, actionsGroup);
@@ -383,14 +459,8 @@ function ensureMemoryCard(element, jobId, task = {}) {
       collapseTarget.getAttribute(COLLAPSED_ATTRIBUTE) !== "false"
     );
   }
-  const toggle = card.querySelector('[data-role="collapse-toggle"]');
-  if (toggle) {
-    updateCollapseToggle(
-      toggle,
-      collapseTarget.getAttribute(COLLAPSED_ATTRIBUTE) !== "false"
-    );
-    toggle.disabled = task.collapseLocked === true;
-  }
+  const preview = card.querySelector('[data-role="preview-markdown"]');
+  if (preview) preview.disabled = task.collapseLocked === true;
   applyCardState(card, task);
   return card;
 }
@@ -458,6 +528,12 @@ function applyCardState(card, task) {
   const saveAs = card.querySelector('[data-role="save-as"]');
   if (saveAs) {
     saveAs.hidden = isGenerating || !hasMemoryToSave;
+  }
+  const previewControl = card.querySelector('[data-role="preview-control"]');
+  if (previewControl) {
+    const hidden = isGenerating || !hasMemoryToSave;
+    if (hidden) previewControl._closePreview?.();
+    previewControl.hidden = hidden;
   }
 }
 
@@ -527,7 +603,7 @@ function injectCardStyles() {
       font-size: 12px;
     }
     [${CARD_ATTRIBUTE}] .chat-distiller-icon-button,
-    [${CARD_ATTRIBUTE}] [data-role="collapse-toggle"],
+    [${CARD_ATTRIBUTE}] [data-role="preview-markdown"],
     [${CARD_ATTRIBUTE}] [data-role="copy-markdown"],
     [${CARD_ATTRIBUTE}] [data-role="save-as"] {
       display: inline-flex;
@@ -539,7 +615,7 @@ function injectCardStyles() {
       box-sizing: border-box;
     }
     [${CARD_ATTRIBUTE}] .chat-distiller-icon-button svg,
-    [${CARD_ATTRIBUTE}] [data-role="collapse-toggle"] svg,
+    [${CARD_ATTRIBUTE}] [data-role="preview-markdown"] > svg,
     [${CARD_ATTRIBUTE}] [data-role="copy-markdown"] svg,
     [${CARD_ATTRIBUTE}] [data-role="save-as"] svg {
       width: 16px;
@@ -567,6 +643,105 @@ function injectCardStyles() {
       white-space: nowrap;
       pointer-events: none;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.24);
+    }
+    [${CARD_ATTRIBUTE}] .chat-distiller-preview-control {
+      position: relative;
+      display: flex;
+    }
+    [${CARD_ATTRIBUTE}] .chat-distiller-preview-control::before {
+      content: "";
+      display: none;
+      position: absolute;
+      z-index: 1000;
+      right: 0;
+      bottom: 100%;
+      width: min(520px, calc(100vw - 32px));
+      height: 18px;
+    }
+    [${CARD_ATTRIBUTE}] .chat-distiller-preview-control.is-open::before {
+      display: block;
+    }
+    [${CARD_ATTRIBUTE}] .chat-distiller-preview-control.is-open [data-role="preview-markdown"]::after {
+      display: none;
+    }
+    [${CARD_ATTRIBUTE}] .chat-distiller-markdown-preview {
+      display: none;
+      position: absolute;
+      z-index: 1001;
+      right: 0;
+      bottom: calc(100% + 18px);
+      width: min(520px, calc(100vw - 32px));
+      max-height: 350px;
+      overflow: hidden;
+      box-sizing: border-box;
+      padding: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 8px;
+      color: #f1f3f4;
+      background: #202124;
+      text-align: left;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.32);
+    }
+    [${CARD_ATTRIBUTE}] .chat-distiller-preview-control.is-open .chat-distiller-markdown-preview {
+      display: block;
+    }
+    [${CARD_ATTRIBUTE}] .chat-distiller-markdown-preview[data-expanded="true"] {
+      position: fixed;
+      inset: 24px;
+      width: auto;
+      max-height: none;
+      overflow: auto;
+    }
+    [${CARD_ATTRIBUTE}] .chat-distiller-markdown-preview pre {
+      margin: 0 0 10px;
+      max-height: 270px;
+      overflow-x: hidden;
+      overflow-y: auto;
+      color: inherit;
+      font: 12px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+    [${CARD_ATTRIBUTE}] .chat-distiller-markdown-preview,
+    [${CARD_ATTRIBUTE}] .chat-distiller-markdown-preview pre {
+      scrollbar-color: transparent transparent;
+      scrollbar-width: none;
+    }
+    [${CARD_ATTRIBUTE}] .chat-distiller-markdown-preview.is-scrolling,
+    [${CARD_ATTRIBUTE}] .chat-distiller-markdown-preview pre.is-scrolling {
+      scrollbar-color: rgba(255, 255, 255, 0.48) transparent;
+      scrollbar-width: thin;
+    }
+    [${CARD_ATTRIBUTE}] .chat-distiller-markdown-preview::-webkit-scrollbar,
+    [${CARD_ATTRIBUTE}] .chat-distiller-markdown-preview pre::-webkit-scrollbar {
+      width: 0;
+    }
+    [${CARD_ATTRIBUTE}] .chat-distiller-markdown-preview.is-scrolling::-webkit-scrollbar,
+    [${CARD_ATTRIBUTE}] .chat-distiller-markdown-preview pre.is-scrolling::-webkit-scrollbar {
+      width: 5px;
+    }
+    [${CARD_ATTRIBUTE}] .chat-distiller-markdown-preview::-webkit-scrollbar-track,
+    [${CARD_ATTRIBUTE}] .chat-distiller-markdown-preview pre::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    [${CARD_ATTRIBUTE}] .chat-distiller-markdown-preview::-webkit-scrollbar-thumb,
+    [${CARD_ATTRIBUTE}] .chat-distiller-markdown-preview pre::-webkit-scrollbar-thumb {
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.48);
+    }
+    [${CARD_ATTRIBUTE}] .chat-distiller-markdown-preview[data-expanded="true"] pre {
+      max-height: none;
+      overflow: visible;
+    }
+    [${CARD_ATTRIBUTE}] .chat-distiller-markdown-preview [data-role="expand-preview"] {
+      width: 100%;
+      height: auto;
+      padding: 7px 10px;
+      color: #202124;
+      background: #f1f3f4;
+    }
+    [${CARD_ATTRIBUTE}] [hidden] {
+      display: none !important;
     }
   `;
   document.documentElement.append(style);

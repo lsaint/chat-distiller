@@ -128,8 +128,6 @@
   "invalidSubdirectory": { "message": "非法的目标子目录路径。" },
   "generatingMemory": { "message": "正在生成 Memory…" },
   "generatingMemoryChars": { "message": "正在生成 Memory…（已 $1 字）" },
-  "collapseContent": { "message": "折叠内容" },
-  "expandContent": { "message": "展开内容" },
   "savingLocal": { "message": "生成完成，正在保存到本地…" },
   "automaticSubmissionFailed": { "message": "$1 自动提交提示词失败，请重试。" },
   "emptyAiResponse": { "message": "AI 返回了空内容。" },
@@ -143,7 +141,7 @@
   "markdownMissing": {
     "message": "AI 已完成回答，但没有返回可保存的 Markdown 代码块。请重置默认提示词后重试。"
   },
-  "contentCollapsed": { "message": "Memory 提示词与回答已折叠，可展开查看。" },
+  "contentCollapsed": { "message": "Memory 提示词与回答已折叠，可预览生成的内容。" },
   "responseStartTimeout": { "message": "等待 AI 开始回答超时。" },
   "responseTimeoutDetails": {
     "message": "等待 AI 回答完成超时。已提取长度：$1；原始长度：$2；消息仍连接：$3。"
@@ -165,5 +163,8 @@
   "copyMarkdown": { "message": "复制 Markdown" },
   "copied": { "message": "已复制" },
   "saveAs": { "message": "另存为…" },
-  "savedAs": { "message": "已保存" }
+  "savedAs": { "message": "已保存" },
+  "previewMarkdown": { "message": "预览 Markdown" },
+  "expandPreview": { "message": "查看完整 Markdown" },
+  "closePreview": { "message": "关闭完整预览" }
 }

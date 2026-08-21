@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.9.0] - 2026-08-21
+
+### Added
+
+- Add in-page Markdown preview to memory cards with instant hover popover and full modal expansion.
+- Support keyboard navigation for Markdown preview (Tab focus, scrollable pre, and Escape dismissal).
+
+### Changed
+
+- Replace raw DOM turn expansion with clean, normalized Markdown preview sharing identical extraction logic with Copy and Save As.
+
 ## [1.8.0] - 2026-08-20
 
 ### Added
@@ -185,7 +196,8 @@ All notable changes to this project will be documented in this file.
 - Distribute the same deterministic extension ZIP through the Chrome Web Store
   submission process and GitHub Releases.
 
-[Unreleased]: https://github.com/lsaint/chat-distiller/compare/v1.8.0...HEAD
+[Unreleased]: https://github.com/lsaint/chat-distiller/compare/v1.9.0...HEAD
+[1.9.0]: https://github.com/lsaint/chat-distiller/compare/v1.8.0...v1.9.0
 [1.8.0]: https://github.com/lsaint/chat-distiller/compare/v1.7.2...v1.8.0
 [1.7.2]: https://github.com/lsaint/chat-distiller/compare/v1.7.1...v1.7.2
 [1.7.1]: https://github.com/lsaint/chat-distiller/compare/v1.7.0...v1.7.1

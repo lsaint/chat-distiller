@@ -26,7 +26,6 @@
 <body>
   <h1 data-i18n="settingsTitle">Chat Distiller Settings</h1>
   <p data-i18n="standaloneSettingsIntro">Choose a local root directory. The extension creates Memory files only in the authorized directory and its subdirectories.</p>
-  <p class="muted" data-i18n="firstAuthorizationHint">Chrome requires local directory access to be authorized here the first time. The authorization is retained, so you normally will not need to set it again.</p>
 
   <label for="root-directory" data-i18n="rootPathLabel">Authorized root directory</label>
   <input id="root-directory" placeholder="No directory selected" data-i18n-placeholder="rootPathPlaceholder" readonly tabindex="0">
@@ -40,6 +39,7 @@
   <input id="relative-directory" value="inbox" placeholder="Example: inbox or notes/chat" data-i18n-placeholder="subdirectoryPlaceholder">
 
   <div id="status" class="muted" data-i18n="checkingRoot">Checking root directory…</div>
+  <p class="muted" style="margin-top: 10px;" data-i18n="firstAuthorizationHint">Due to Chrome's permission model, local directory access must be authorized here. On Windows or initial setup, Chrome may require 2–3 confirmations to establish persistent trust, after which saving will be fully silent.</p>
 
   <script src="prompt-constants.js"></script>
   <script src="i18n.js"></script>

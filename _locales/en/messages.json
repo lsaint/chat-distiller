@@ -31,7 +31,7 @@
     "message": "Choose a local root directory. The extension creates Memory files only in the authorized directory and its subdirectories."
   },
   "firstAuthorizationHint": {
-    "message": "Chrome requires local directory access to be authorized here the first time. The authorization is retained, so you normally will not need to set it again."
+    "message": "Due to Chrome's permission model, local directory access must be authorized here. On Windows or initial setup, Chrome may require 2–3 confirmations to establish persistent trust, after which saving will be fully silent."
   },
   "configureRootFirst": { "message": "Set up a root directory first" },
   "rootConnectedClosing": {

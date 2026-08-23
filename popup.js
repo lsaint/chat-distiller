@@ -1,4 +1,8 @@
-import { getStoredHandle, getReadWritePermission } from "./db-utils.js";
+import {
+  getStoredHandle,
+  getReadWritePermission,
+  storeHandle,
+} from "./db-utils.js";
 import {
   checkPageReady,
   getActiveTab,
@@ -102,6 +106,9 @@ generateButton.addEventListener("click", async () => {
       // Generate is a direct user gesture in the extension popup, so a stored
       // handle can be re-authorized here without opening the side panel.
       permission = await rootHandle.requestPermission({ mode: "readwrite" });
+      if (permission === "granted") {
+        await storeHandle(rootHandle);
+      }
     }
     if (permission !== "granted") {
       // A missing or denied handle requires the directory setup flow.

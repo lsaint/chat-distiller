@@ -31,7 +31,7 @@
     "message": "选择本地根目录。扩展只会在已授权的目录及其子目录中创建 Memory 文件。"
   },
   "firstAuthorizationHint": {
-    "message": "受 Chrome 权限机制限制，首次使用时需在此授权本地目录；授权会保留，后续通常无需再次设置。"
+    "message": "受 Chrome 权限机制限制，首次使用需在此授权本地目录；在 Windows 等系统下可能需确认 2~3 次以建立持久信任，之后将永久静默保存。"
   },
   "configureRootFirst": { "message": "请先设置根目录" },
   "rootConnectedClosing": {

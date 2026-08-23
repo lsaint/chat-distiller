@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.9.2] - 2026-08-23
+
+### Fixed
+
+- Persist directory handle to IndexedDB upon reauthorization in popup to keep background worker synchronized.
+- Clarify persistent authorization trust behavior and simplify side panel layout.
+
 ## [1.9.1] - 2026-08-21
 
 ### Fixed
@@ -203,7 +210,8 @@ All notable changes to this project will be documented in this file.
 - Distribute the same deterministic extension ZIP through the Chrome Web Store
   submission process and GitHub Releases.
 
-[Unreleased]: https://github.com/lsaint/chat-distiller/compare/v1.9.1...HEAD
+[Unreleased]: https://github.com/lsaint/chat-distiller/compare/v1.9.2...HEAD
+[1.9.2]: https://github.com/lsaint/chat-distiller/compare/v1.9.1...v1.9.2
 [1.9.1]: https://github.com/lsaint/chat-distiller/compare/v1.9.0...v1.9.1
 [1.9.0]: https://github.com/lsaint/chat-distiller/compare/v1.8.0...v1.9.0
 [1.8.0]: https://github.com/lsaint/chat-distiller/compare/v1.7.2...v1.8.0

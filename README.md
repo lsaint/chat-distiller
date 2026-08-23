@@ -9,7 +9,7 @@
 <h1 align="center">Chat Distiller</h1>
 
 <p align="center">
-  Distill browser AI conversations into concise, reusable Markdown memory—saved directly to a local folder you control.
+  Turn browser AI conversations into reusable local Markdown with prompts you control.
 </p>
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -22,7 +22,7 @@
 [简体中文](README.zh-CN.md) · [Privacy Policy](PRIVACY.md) ·
 [Aikito](https://github.com/lsaint/aikito)
 
-Chat Distiller is a Chrome Manifest V3 extension that asks the AI in your current chat to distill the conversation, validates the structured response, and saves it as Markdown to a directory you explicitly authorize.
+Chat Distiller is a Chrome extension that runs a configurable prompt inside your current AI conversation, validates the generated Markdown, and saves it directly to a local folder you control.
 
 There is no developer-controlled backend, analytics service, or cloud storage. It works independently with any local Markdown directory (Obsidian, Git repos, or local folders), and can also companion with [Aikito](https://github.com/lsaint/aikito).
 
@@ -32,19 +32,23 @@ There is no developer-controlled backend, analytics service, or cloud storage. I
 
 ## Why Chat Distiller
 
-General-purpose exporters capture full transcripts, but long AI conversations often bury key decisions under exploration and temporary context. Chat Distiller asks the AI to distill the conversation into a concise Markdown note—containing only reusable decisions, constraints, insights, and action items—and saves it directly to your local workspace. See [Why Chat Distiller](docs/why-chat-distiller.md) for the full background.
+AI conversations frequently generate valuable knowledge, but raw transcripts are noisy and different workflows require different outputs. Chat Distiller provides a built-in distillation prompt out of the box, while letting you define your own prompts to transform the current AI conversation into structured local Markdown.
 
-| Raw Conversation (Before)                                                                                                  | Concise Memory Note (After)                                                                                                                    |
-| -------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Noisy & Verbose**: Full transcript containing exploration, trial-and-error, repetition, and temporary debugging context. | **Clean & Reusable**: Structured Markdown note written directly to your authorized local folder.                                               |
-| **High Overhead**: Hard to review manually and wastes context tokens when fed back to Coding Agents.                       | **High Signal**: Contains only **Decisions & Rationale**, **Architectural Constraints**, **Rejected Alternatives**, and **Follow-up Actions**. |
+`Memory notes` · `Decisions` · `TODOs` · `Project context` · `Study notes` · `Documentation` · `Custom templates`
+
+See [Why Chat Distiller](docs/why-chat-distiller.md) for the full background.
+
+| Raw Conversation                                                                                                        | Prompt-Driven Markdown                                                                                                           |
+| ----------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| **Noisy & Verbose**: Full chat transcripts contain trial-and-error, repetition, and temporary debugging context.        | **Clean & Structured**: High-signal Markdown shaped by your prompt and written directly to your authorized local folder.         |
+| **High Overhead**: Hard to review manually and wastes context tokens when fed back to Coding Agents or knowledge bases. | **Workflow-Ready**: Extracted decisions, action items, or project context formatted exactly how your notes or tools expect them. |
 
 ## How It Works
 
 1. Authorize a local root directory during first-time setup.
 2. Open a supported AI conversation.
 3. Select **Generate and save** from the extension popup (optionally specifying a custom subdirectory or filename).
-4. Chat Distiller visibly inserts and submits the distillation prompt in the current conversation.
+4. Chat Distiller visibly inserts and submits your configured prompt in the current conversation.
 5. The AI generates a structured Markdown result, which the extension validates.
 6. The background task writes the note to your directory (defaults to `inbox/`). If no filename is entered, it uses the AI-generated filename, falling back to a time-and-title format.
 
@@ -94,7 +98,7 @@ To use Chat Distiller with [Aikito](https://github.com/lsaint/aikito), select yo
 
 ```mermaid
 flowchart LR
-    A["Browser AI conversation"] -->|"Distill with Chat Distiller"| B["Aikito inbox/"]
+    A["Browser AI conversation"] -->|"Transform with Chat Distiller"| B["Aikito inbox/"]
     B -->|"Review & Archive"| C["Git-Managed Memory"]
     B -->|"Direct Use"| D["Coding Agents"]
     C -->|"Reuse Context"| D
@@ -112,10 +116,10 @@ See our [Privacy Policy](PRIVACY.md) and [Local Storage and Privacy](docs/local-
 
 ## Design Choices
 
-- **Distillation, not full export.** The default prompt keeps reusable knowledge instead of reproducing the entire transcript.
-- **A strict output protocol.** The response must contain start and end markers, one outer four-backtick fence, and a lowercase kebab-case filename. Incomplete output is rejected rather than silently saved.
+- **Prompt-driven transformation, not transcript scraping.** The default prompt distills reusable knowledge, while custom prompts can define what to extract and how to structure it.
+- **A strict output protocol.** Generated content is validated before it is saved, so incomplete or malformed results are rejected instead of silently written to disk.
 - **No generated timestamp in the note body.** The note focuses on the knowledge itself; filenames and filesystem metadata can carry operational timing.
-- **Compact conversation UI.** The distillation prompt and generated response collapse into a status card with an explicit option to reveal the content.
+- **Compact conversation UI.** The submitted prompt and generated response collapse into a status card with an explicit option to reveal the content.
 - **No silent overwrite.** Filename collisions receive a numeric suffix.
 - **User-visible automation.** Prompt insertion and submission happen in the active chat and only after a user action.
 

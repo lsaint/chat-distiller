@@ -1,7 +1,7 @@
 {
   "extName": { "message": "Chat Distiller" },
   "extDescription": {
-    "message": "Distill the current AI conversation into a structured Markdown note and save it locally."
+    "message": "Distill AI conversations into local notes with your own prompts."
   },
   "settingsTitle": { "message": "Chat Distiller Settings" },
   "checkingRoot": { "message": "Checking root directory…" },

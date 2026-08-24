@@ -152,6 +152,16 @@ Content 层采用 **Site Adapter** 架构。共享协议、状态机、DOM 工�
 
 新增站点适配器时，请把权限限制在所需的最小 HTTPS 来源范围内，并避免在站点专属代码中重复实现共享协议或状态机逻辑。
 
+提交 Pull Request 前，请运行本地发布门禁：
+
+```bash
+node scripts/smoke-check.js
+python3 scripts/package-extension.py --check
+python3 -m unittest discover -s tests
+```
+
+运行 `python3 scripts/package-extension.py` 可生成确定性的、仅包含运行时文件的 Chrome Web Store ZIP 及校验文件；同版本产物不会被覆盖。
+
 ## 支持
 
 如果你觉得 Chat Distiller 对你有帮助，可以[支持它的开发](https://lsaint.github.io/donation/?utm_source=github&utm_medium=readme&utm_campaign=chat-distiller)。

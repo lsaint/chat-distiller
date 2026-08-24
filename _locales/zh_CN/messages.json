@@ -1,7 +1,7 @@
 {
   "extName": { "message": "Chat Distiller" },
   "extDescription": {
-    "message": "一键提炼当前 AI 对话，生成结构化 Markdown 笔记并保存到本地。"
+    "message": "使用自定义提示词，将 AI 对话提炼为本地 Markdown 笔记。"
   },
   "settingsTitle": { "message": "Chat Distiller 设置" },
   "checkingRoot": { "message": "正在检查根目录…" },
@@ -141,7 +141,9 @@
   "markdownMissing": {
     "message": "AI 已完成回答，但没有返回可保存的 Markdown 代码块。请重置默认提示词后重试。"
   },
-  "contentCollapsed": { "message": "Memory 提示词与回答已折叠，可预览生成的内容。" },
+  "contentCollapsed": {
+    "message": "Memory 提示词与回答已折叠，可预览生成的内容。"
+  },
   "responseStartTimeout": { "message": "等待 AI 开始回答超时。" },
   "responseTimeoutDetails": {
     "message": "等待 AI 回答完成超时。已提取长度：$1；原始长度：$2；消息仍连接：$3。"

@@ -152,6 +152,16 @@ Issues and pull requests are welcome.
 
 When adding a new site adapter, keep permissions limited to the narrowest supported HTTPS origin and avoid duplicating shared protocol or state-machine logic in site-specific code.
 
+Run the local release gates before opening a pull request:
+
+```bash
+node scripts/smoke-check.js
+python3 scripts/package-extension.py --check
+python3 -m unittest discover -s tests
+```
+
+To build the deterministic runtime-only Chrome Web Store archive and checksum, run `python3 scripts/package-extension.py`. Existing version artifacts are never overwritten.
+
 ## Support
 
 If you find Chat Distiller useful, you can [support its development](https://lsaint.github.io/donation/?utm_source=github&utm_medium=readme&utm_campaign=chat-distiller).

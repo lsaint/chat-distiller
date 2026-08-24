@@ -23,3 +23,15 @@ jobs:
 
       - name: Run extension smoke checks
         run: node scripts/smoke-check.js
+
+  release-gates:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run release integrity and privacy checks
+        run: python3 scripts/package-extension.py --check
+
+      - name: Run packaging tests
+        run: python3 -m unittest discover -s tests

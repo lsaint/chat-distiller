@@ -15,6 +15,9 @@
   "filenamePlaceholder": { "message": "Leave blank to generate automatically" },
   "distillationPrompt": { "message": "Distillation prompt" },
   "resetDefault": { "message": "Reset to default" },
+  "promptProtocolDisclosure": {
+    "message": "Custom prompts control the note content and structure. Chat Distiller automatically appends the required output protocol."
+  },
   "autoDisclosure": {
     "message": "After you click “Generate and save,” the extension automatically enters and sends the prompt above in the current AI chat."
   },
@@ -31,7 +34,7 @@
     "message": "Choose a local root directory. The extension creates Memory files only in the authorized directory and its subdirectories."
   },
   "firstAuthorizationHint": {
-    "message": "Due to Chrome's permission model, local directory access must be authorized here. On Windows or initial setup, Chrome may require 2–3 confirmations to establish persistent trust, after which saving will be fully silent."
+    "message": "Due to Chrome's permission model, local directory access must be authorized here. Depending on the system, Chrome may require 2–3 confirmations to establish persistent trust, after which saving will be fully silent."
   },
   "configureRootFirst": { "message": "Set up a root directory first" },
   "rootConnectedClosing": {

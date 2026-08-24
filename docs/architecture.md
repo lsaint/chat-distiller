@@ -125,6 +125,11 @@ version marker, a lowercase kebab-case filename, an outer four-backtick Markdown
 fence, and an explicit completion marker. Four backticks allow ordinary
 three-backtick code blocks inside the note.
 
+The editable prompt controls only the note's content and internal structure.
+The extension always appends the non-configurable protocol when the task starts,
+even if the editable prompt already contains protocol-like markers. This keeps
+the save contract internal and prevents custom prompt wording from bypassing it.
+
 The extractor rejects missing markers, incomplete responses, and content still
 being generated. It never saves a partial response merely because the visible
 text stopped changing briefly. Site-specific recovery is disabled by default

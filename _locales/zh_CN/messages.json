@@ -15,6 +15,9 @@
   "filenamePlaceholder": { "message": "留空则自动生成" },
   "distillationPrompt": { "message": "整理提示词" },
   "resetDefault": { "message": "重置默认" },
+  "promptProtocolDisclosure": {
+    "message": "自定义提示词控制笔记的内容和结构；Chat Distiller 会自动附加保存所需的输出协议。"
+  },
   "autoDisclosure": {
     "message": "点击“生成并保存”后，扩展会在当前 AI 对话框中自动填写并发送上述提示词。"
   },
@@ -31,7 +34,7 @@
     "message": "选择本地根目录。扩展只会在已授权的目录及其子目录中创建 Memory 文件。"
   },
   "firstAuthorizationHint": {
-    "message": "受 Chrome 权限机制限制，首次使用需在此授权本地目录；在 Windows 等系统下可能需确认 2~3 次以建立持久信任，之后将永久静默保存。"
+    "message": "受 Chrome 权限机制限制，首次使用需在此授权本地目录；系统可能需确认 2~3 次以建立持久信任，之后将永久静默保存。"
   },
   "configureRootFirst": { "message": "请先设置根目录" },
   "rootConnectedClosing": {

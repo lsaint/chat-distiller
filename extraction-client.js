@@ -1,9 +1,6 @@
 import { getSiteIdForUrl, isSupportedChatUrl } from "./sites.js";
 
 const { getOutputProtocolSuffix, t } = globalThis.ChatDistillerI18n;
-const MEMORY_PROTOCOL_MARKER = "<!-- chat-distiller:v1 -->";
-const MEMORY_PROTOCOL_END_MARKER = "<!-- /chat-distiller:v1 -->";
-const MEMORY_FILENAME_MARKER = "<!-- filename: topic-name.md -->";
 
 export async function getActiveTab() {
   const [tab] = await chrome.tabs.query({
@@ -53,7 +50,7 @@ export async function startExtractionTask({
     payload: {
       jobId: crypto.randomUUID(),
       tabId: tab.id,
-      prompt: enforceOutputProtocol(prompt),
+      prompt: appendOutputProtocol(prompt),
       relativeDirectory,
       filename,
       sourceUrl: tab.url,
@@ -62,16 +59,6 @@ export async function startExtractionTask({
   });
 }
 
-function enforceOutputProtocol(prompt) {
-  if (
-    prompt.includes(MEMORY_PROTOCOL_MARKER) &&
-    prompt.includes(MEMORY_PROTOCOL_END_MARKER) &&
-    prompt.includes(MEMORY_FILENAME_MARKER) &&
-    prompt.includes("update_time") &&
-    prompt.includes("Canvas")
-  ) {
-    return prompt;
-  }
-
+export function appendOutputProtocol(prompt) {
   return `${prompt.trim()}\n\n${getOutputProtocolSuffix()}`;
 }

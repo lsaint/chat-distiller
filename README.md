@@ -116,7 +116,7 @@ See our [Privacy Policy](PRIVACY.md) and [Local Storage and Privacy](docs/local-
 
 ## Design Choices
 
-- **Prompt-driven transformation, not transcript scraping.** The default prompt distills reusable knowledge, while custom prompts can define what to extract and how to structure it.
+- **Prompt-driven transformation, not transcript scraping.** The default prompt distills reusable knowledge, while custom prompts control what to extract and how to structure the note. Chat Distiller automatically appends the required output protocol so the result can be validated and saved reliably.
 - **A strict output protocol.** Generated content is validated before it is saved, so incomplete or malformed results are rejected instead of silently written to disk.
 - **No generated timestamp in the note body.** The note focuses on the knowledge itself; filenames and filesystem metadata can carry operational timing.
 - **Compact conversation UI.** The submitted prompt and generated response collapse into a status card with an explicit option to reveal the content.

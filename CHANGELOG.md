@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.9.3] - 2026-08-24
+
+### Changed
+
+- Keep custom prompts focused on note content while always appending the internal output protocol before submission.
+- Clarify the custom prompt boundary in the popup and documentation.
+- Describe repeated directory authorization as system-dependent instead of Windows-specific.
+
 ## [1.9.2] - 2026-08-23
 
 ### Fixed

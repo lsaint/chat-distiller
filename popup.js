@@ -12,7 +12,7 @@ import { isSupportedChatUrl } from "./sites.js";
 
 const { getDefaultPrompt, getLocale, isDefaultPrompt, localizeDocument, t } =
   globalThis.ChatDistillerI18n;
-const CURRENT_PROMPT_VERSION = 8;
+const CURRENT_PROMPT_VERSION = 9;
 const DEFAULT_PROMPT = getDefaultPrompt();
 
 const ACTIVE_TASK_KEY = "activeExtractionTask";
@@ -252,7 +252,8 @@ async function initialize() {
   const hasManagedDefault =
     stored.promptLocale &&
     stored.promptLocale !== "custom" &&
-    isDefaultPrompt(stored.prompt);
+    (isDefaultPrompt(stored.prompt) ||
+      Number(stored.promptVersion || 0) < CURRENT_PROMPT_VERSION);
   if (!stored.prompt || hasManagedDefault) {
     promptInput.value = DEFAULT_PROMPT;
     await chrome.storage.local.set({
@@ -408,9 +409,9 @@ async function checkDirectoryStatus() {
       permission === "granted" ? "success" : "muted";
 
     // A stored handle means the root directory is configured.
-    // On Windows, queryPermission() may return "prompt" after the side panel
-    // closes even though the handle is still valid. Keep Generate enabled so
-    // its click handler can request permission within a user activation.
+    // Some systems may return "prompt" after the side panel closes even though
+    // the handle is still valid. Keep Generate enabled so its click handler can
+    // request permission within a user activation.
     setGenerateAvailability(true);
   } catch {
     directoryStatus.value = "";

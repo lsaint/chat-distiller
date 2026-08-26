@@ -121,6 +121,12 @@
         margin: 0;
       }
 
+      .prompt-label-actions {
+        display: flex;
+        align-items: center;
+        gap: 2px;
+      }
+
       input,
       textarea {
         width: 100%;
@@ -183,6 +189,15 @@
       #reset-prompt[data-tooltip]::after {
         right: 0;
         left: auto;
+        transform: none;
+      }
+
+      #prompt-info[data-tooltip]::after {
+        right: 0;
+        left: auto;
+        width: 260px;
+        white-space: normal;
+        text-align: left;
         transform: none;
       }
 
@@ -381,27 +396,40 @@
         <label for="prompt" data-i18n="distillationPrompt"
           >Distillation prompt</label
         >
-        <button
-          id="reset-prompt"
-          type="button"
-          class="header-action"
-          data-tooltip="Reset to default"
-          data-i18n-tooltip="resetDefault"
-          aria-label="Reset to default"
-          data-i18n-aria-label="resetDefault"
-        >
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path
-              d="M13 3a9 9 0 0 0-9 9H1l4 4 4-4H6a7 7 0 1 1 2.05 4.95l-1.42 1.42A9 9 0 1 0 13 3Z"
-            />
-          </svg>
-        </button>
+        <div class="prompt-label-actions">
+          <button
+            id="prompt-info"
+            type="button"
+            class="header-action"
+            data-tooltip="Custom prompts control the note content and structure. Chat Distiller automatically appends the required output protocol."
+            data-i18n-tooltip="promptProtocolDisclosure"
+            aria-label="Custom prompts control the note content and structure. Chat Distiller automatically appends the required output protocol."
+            data-i18n-aria-label="promptProtocolDisclosure"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M11 10h2v7h-2v-7Zm1-7a9 9 0 1 0 0 18 9 9 0 0 0 0-18Zm0 16a7 7 0 1 1 0-14 7 7 0 0 1 0 14Zm-1-12h2v2h-2V7Z"
+              />
+            </svg>
+          </button>
+          <button
+            id="reset-prompt"
+            type="button"
+            class="header-action"
+            data-tooltip="Reset to default"
+            data-i18n-tooltip="resetDefault"
+            aria-label="Reset to default"
+            data-i18n-aria-label="resetDefault"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M13 3a9 9 0 0 0-9 9H1l4 4 4-4H6a7 7 0 1 1 2.05 4.95l-1.42 1.42A9 9 0 1 0 13 3Z"
+              />
+            </svg>
+          </button>
+        </div>
       </div>
       <textarea id="prompt"></textarea>
-      <p class="muted" data-i18n="promptProtocolDisclosure">
-        Custom prompts control the note content and structure. Chat Distiller
-        automatically appends the required output protocol.
-      </p>
 
       <p id="status" class="muted" data-i18n="autoDisclosure">
         After you click “Generate and save,” the extension automatically enters

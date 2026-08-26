@@ -40,6 +40,12 @@ export const SUPPORTED_SITES = [
     origins: ["https://www.perplexity.ai/"],
     conversationIdPattern: /\/(?:search|page)\/([^/?#]+)/,
   },
+  {
+    siteId: "grok",
+    displayName: "Grok",
+    origins: ["https://grok.com/"],
+    conversationIdPattern: /\/(?:c|chat)\/([^/?#]+)/,
+  },
 ];
 
 export function getSiteForUrl(url) {

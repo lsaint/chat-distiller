@@ -2,7 +2,7 @@ import "./prompt-constants.js";
 import "./i18n.js";
 import { getStoredHandle } from "./db-utils.js";
 import { markdownFileExists, saveMarkdownFile } from "./file-utils.js";
-import { getConversationId } from "./sites.js";
+import { getConversationId, getSiteIdForUrl } from "./sites.js";
 
 const { t } = globalThis.ChatDistillerI18n;
 const ACTIVE_TASK_KEY = "activeExtractionTask";
@@ -124,11 +124,36 @@ chrome.tabs.onRemoved.addListener((tabId) => {
   failTaskForTab(tabId, t("tabClosed")).catch(() => {});
 });
 
-chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   if (changeInfo.status === "loading") {
-    failTaskForTab(tabId, t("tabNavigated")).catch(() => {});
+    handleTaskTabLoading(tabId, changeInfo.url || tab?.url).catch(() => {});
   }
 });
+
+async function handleTaskTabLoading(tabId, url) {
+  const task = await getActiveTask();
+  if (!task || task.tabId !== tabId || !GENERATION_STATUSES.has(task.status)) {
+    return;
+  }
+
+  if (task.siteId !== "grok" || getSiteIdForUrl(url) !== task.siteId) {
+    await failTaskForTab(tabId, t("tabNavigated"));
+    return;
+  }
+
+  const navigation = getConversationId(url, task.siteId);
+  const nextSessionKey = navigation.conversationId
+    ? `${navigation.siteId}:${navigation.conversationId}`
+    : "";
+  if (task.sessionKey && task.sessionKey !== nextSessionKey) {
+    await failTaskForTab(tabId, t("tabNavigated"));
+    return;
+  }
+
+  if (!task.sessionKey && nextSessionKey) {
+    await updateTask(task, { sessionKey: nextSessionKey }, GENERATION_STATUSES);
+  }
+}
 
 async function startExtractionTask(payload) {
   validateStartPayload(payload);

@@ -2,7 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [1.10.0] - 2026-08-26
+
+### Added
+
+- Add Grok site adapter support (`https://grok.com/*`) with ProseMirror/Tiptap editor integration, thinking and citation noise filtering, and turn interaction handling.
+
+### Fixed
+
+- Preserve Grok extraction tasks across same-conversation URL updates, restore saved status accurately, and show only the latest collapsed Memory status card.
 
 ## [1.9.3] - 2026-08-24
 

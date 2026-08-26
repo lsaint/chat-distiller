@@ -3,6 +3,7 @@ const { t } = globalThis.ChatDistillerI18n;
 const CARD_ATTRIBUTE = "data-chat-distiller-card";
 const COLLAPSED_ATTRIBUTE = "data-chat-distiller-collapsed";
 const PROMPT_COLLAPSED_ATTRIBUTE = "data-chat-distiller-prompt-collapsed";
+const SUPERSEDED_ATTRIBUTE = "data-chat-distiller-superseded";
 
 // Adapter hooks — injected via configureCardUi() by engine.js at boot.
 // Defaults are identity/null so that card-ui.js never reads ChatDistiller.adapter directly.
@@ -473,6 +474,23 @@ function getBrandIconUrl() {
   return "";
 }
 
+function getMemoryCard(element) {
+  if (!element) {
+    return null;
+  }
+  return resolveCardMountPoint(element).querySelector(
+    `:scope > [${CARD_ATTRIBUTE}]`,
+  );
+}
+
+function refreshMemoryCardVisibility() {
+  const cards = document.querySelectorAll(`[${CARD_ATTRIBUTE}]`);
+  const latestCard = cards[cards.length - 1] || null;
+  for (const card of cards) {
+    card.setAttribute(SUPERSEDED_ATTRIBUTE, String(card !== latestCard));
+  }
+}
+
 function ensureMemoryCard(element, jobId, task = {}) {
   if (!element) {
     return null;
@@ -483,7 +501,7 @@ function ensureMemoryCard(element, jobId, task = {}) {
   const mountPoint = resolveCardMountPoint(element);
   const collapseTarget = resolveCollapseTarget(element);
 
-  let card = mountPoint.querySelector(`:scope > [${CARD_ATTRIBUTE}]`);
+  let card = getMemoryCard(element);
   if (!card) {
     card = document.createElement("div");
     card.setAttribute(CARD_ATTRIBUTE, "");
@@ -520,6 +538,7 @@ function ensureMemoryCard(element, jobId, task = {}) {
     card.append(statusGroup, actionsGroup);
     mountPoint.append(card);
   }
+  refreshMemoryCardVisibility();
 
   if (jobId && jobId !== "restored") {
     // A card created by the history-restore path starts out as "success". When a
@@ -643,6 +662,9 @@ function injectCardStyles() {
       background: color-mix(in srgb, currentColor 5%, transparent);
       font-size: 13px;
       line-height: 1.45;
+    }
+    [${CARD_ATTRIBUTE}][${SUPERSEDED_ATTRIBUTE}="true"] {
+      display: none !important;
     }
     [${CARD_ATTRIBUTE}] .chat-distiller-card-header {
       display: flex;
@@ -882,6 +904,7 @@ globalThis.ChatDistiller.cardUi = {
   setPromptTurnCollapsed,
   setMemoryTurnCollapsed,
   setMemoryTurnCollapseLocked,
+  getMemoryCard,
   ensureMemoryCard,
   updateMemoryCard,
   applyCardState,

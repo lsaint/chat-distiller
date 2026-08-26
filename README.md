@@ -63,6 +63,7 @@ Chat Distiller records saved conversation metadata to prevent duplicate saves an
 - Gemini
 - Doubao
 - Perplexity
+- Grok
 
 Additional AI chat sites can be added through the Site Adapter interface.
 

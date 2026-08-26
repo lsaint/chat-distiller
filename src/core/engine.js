@@ -20,6 +20,7 @@
     setPromptTurnCollapsed,
     setMemoryTurnCollapsed,
     setMemoryTurnCollapseLocked,
+    getMemoryCard,
     ensureMemoryCard,
     updateMemoryCard,
     injectCardStyles,
@@ -516,33 +517,35 @@
     }
 
     // 1. Truly Saved Card Check: Require a valid task.saved record with fullPath & relativePath
-    const existingCard = lastAssistantMessage.querySelector(
-      `:scope > [${CARD_ATTRIBUTE}]`,
-    );
-    if (existingCard) {
-      const task = existingCard.chatDistillerTask || {};
-      if (task.saved?.fullPath && task.saved?.relativePath) {
-        const protocolContent = readProtocolContent(lastAssistantMessage);
-        const content = protocolContent
-          ? stripProtocolMarker(protocolContent)
-          : "";
-        const filename =
-          task.saved.filename || extractProtocolFilename(protocolContent);
+    const existingCard = getMemoryCard(lastAssistantMessage);
+    const saved = existingCard?.chatDistillerTask?.saved;
+    if (saved?.fullPath && saved?.relativePath) {
+      const protocolContent = readProtocolContent(lastAssistantMessage);
+      const content = protocolContent
+        ? stripProtocolMarker(protocolContent)
+        : "";
+      const filename =
+        saved.filename || extractProtocolFilename(protocolContent);
 
-        return {
-          ok: true,
-          reusable: true,
-          alreadySaved: true,
-          saved: task.saved,
-          result: {
-            content,
-            filename,
-            title: adapter.getConversationTitle(),
-            sourceUrl: location.href,
-            siteId: adapter.siteId,
-          },
-        };
-      }
+      ensureMemoryCard(lastAssistantMessage, "restored", {
+        status: "success",
+        statusMessage: t("savedPath", saved.fullPath),
+        saved,
+      });
+
+      return {
+        ok: true,
+        reusable: true,
+        alreadySaved: true,
+        saved,
+        result: {
+          content,
+          filename,
+          title: adapter.getConversationTitle(),
+          sourceUrl: location.href,
+          siteId: adapter.siteId,
+        },
+      };
     }
 
     const protocolContent = readProtocolContent(lastAssistantMessage);
@@ -978,7 +981,7 @@
       return;
     }
 
-    if (message.querySelector(`:scope > [${CARD_ATTRIBUTE}]`)) {
+    if (getMemoryCard(message)) {
       return;
     }
 

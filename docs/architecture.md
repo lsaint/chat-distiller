@@ -28,7 +28,8 @@ chat-distiller/
     │   ├── deepseek.js            # DeepSeek-specific DOM adapter
     │   ├── gemini.js              # Gemini-specific DOM adapter
     │   ├── doubao.js              # Doubao-specific DOM adapter
-    │   └── perplexity.js          # Perplexity-specific DOM adapter
+    │   ├── perplexity.js          # Perplexity-specific DOM adapter
+    │   └── grok.js                # Grok-specific DOM adapter
     └── content-entry.js           # Adapter validation and engine startup
 ```
 

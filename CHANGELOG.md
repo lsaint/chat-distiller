@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.10.1] - 2026-09-27
+
+### Fixed
+
+- Adapt ChatGPT site adapter to new Web DOM structure (`data-chatgpt-search-unit-key`, `data-turn-key`, `.turn-action-controls`, and CodeBlock container without `<pre>`).
+- Restore assistant and user message tracking, prompt submission, protocol extraction, and card collapse on modern ChatGPT.
+- Add test coverage for standard and GPTs conversation URLs.
+
 ## [1.10.0] - 2026-08-26
 
 ### Added

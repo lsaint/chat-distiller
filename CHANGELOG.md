@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.10.2] - 2026-09-29
+
+### Fixed
+
+- Constrain Gemini status card width to chat content width (`var(--bard-chat-window-content-width-default, 708px)`) and align with container query margins on narrow viewports, preventing the card from stretching edge-to-edge.
+- Add 15% left and right margins (`inset: 24px 15%`, `width: calc(100vw - 30%)`) to full-screen Markdown preview modal for improved readability and focus.
+
 ## [1.10.1] - 2026-09-27
 
 ### Fixed

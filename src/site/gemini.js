@@ -250,6 +250,22 @@
   globalThis.ChatDistiller.registerAdapter({
     siteId: 'gemini',
 
+    // Gemini sets 100% width on model-response while individual content blocks
+    // are centered via --bard-chat-window-content-width-default (708px).
+    // Constrain the card to match Gemini content width and avoid spanning full viewport.
+    cardStyles: `
+      model-response > [${CARD_ATTRIBUTE}] {
+        max-width: var(--bard-chat-window-content-width-default, 708px);
+        margin-inline: auto;
+      }
+      @container chat-area (max-width: 756px) {
+        model-response > [${CARD_ATTRIBUTE}] {
+          width: calc(100% - var(--gem-sys-spacing--xxl, 24px) * 2);
+          margin-inline: var(--gem-sys-spacing--xxl, 24px);
+        }
+      }
+    `,
+
     protocolBlockSelector:
       'model-response message-content pre code, ' +
       'model-response message-content pre, ' +

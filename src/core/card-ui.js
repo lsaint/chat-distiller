@@ -10,6 +10,7 @@ const SUPERSEDED_ATTRIBUTE = "data-chat-distiller-superseded";
 let resolveCardMountPoint = (el) => el;
 let resolveCollapseTarget = (el) => el;
 let resolvePromptTurn = null;
+let getCardStyles = () => "";
 let runTaskAction = null;
 let getMarkdownDocument = null;
 let runCopyMarkdown = null;
@@ -28,6 +29,7 @@ function configureCardUi(options = {}) {
   if (options.resolveCardMountPoint) resolveCardMountPoint = options.resolveCardMountPoint;
   if (options.resolveCollapseTarget) resolveCollapseTarget = options.resolveCollapseTarget;
   if (options.resolvePromptTurn) resolvePromptTurn = options.resolvePromptTurn;
+  if (options.getCardStyles) getCardStyles = options.getCardStyles;
   if (options.runTaskAction) runTaskAction = options.runTaskAction;
   if (options.getMarkdownDocument) getMarkdownDocument = options.getMarkdownDocument;
   if (options.runCopyMarkdown) runCopyMarkdown = options.runCopyMarkdown;
@@ -805,8 +807,8 @@ function injectCardStyles() {
     }
     dialog.chat-distiller-modal-preview {
       position: fixed;
-      inset: 24px;
-      width: calc(100vw - 48px);
+      inset: 24px 15%;
+      width: calc(100vw - 30%);
       height: calc(100vh - 48px);
       max-width: none;
       max-height: none;
@@ -891,6 +893,7 @@ function injectCardStyles() {
     [${CARD_ATTRIBUTE}] [hidden] {
       display: none !important;
     }
+    ${getCardStyles ? getCardStyles() : ""}
   `;
   document.documentElement.append(style);
 }

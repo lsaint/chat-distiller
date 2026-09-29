@@ -31,6 +31,7 @@
     resolveCardMountPoint: (el) => adapter.getCardMountPoint(el),
     resolveCollapseTarget: (el) => adapter.getCollapseTarget(el),
     resolvePromptTurn: (el) => adapter.getPromptCollapseTarget(el),
+    getCardStyles: () => adapter.cardStyles || "",
     runTaskAction: handleCardTaskAction,
     getMarkdownDocument: resolveMarkdownDocument,
     runCopyMarkdown: handleCopyMarkdown,

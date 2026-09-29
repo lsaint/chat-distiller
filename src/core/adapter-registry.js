@@ -51,6 +51,9 @@
       getCollapseTarget: defaultGetCollapseTarget,
       getPromptCollapseTarget: defaultGetPromptCollapseTarget,
 
+      // Site-specific card styles
+      cardStyles: "",
+
       // Protocol deviations are opt-in and owned by the affected site.
       isRecoverableProtocolContent: defaultIsRecoverableProtocolContent,
 
